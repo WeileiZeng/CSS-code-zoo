@@ -8,6 +8,12 @@ I use weilei_lib as a submodule here. It works like two repo, but just one insid
 ```
 git clone --recurse-submodules https://github.com/QEC-pages/how-to-use-weilei-lib
 ```
+You can test it by
+```
+make test_lib
+make test
+```
+
 
 
 
