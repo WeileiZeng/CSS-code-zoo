@@ -3,8 +3,19 @@ A sample repo on how to use functions in weilei_lib. One can fork this one and u
 
 
 # How to use from this repo
+```
+git clone --recurse-submodules https://github.com/chaconinc/MainProject
+```
 
 
 # sub module
 
-https://git-scm.com/book/en/v2/Git-Tools-Submodules
+see https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
+init:
+```
+git submodule add git@github.com:WeileiZeng/weilei_lib.git
+```
+You can also use http instead of ssh
+
+Then you work on those like two different repo.
