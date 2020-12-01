@@ -3,12 +3,15 @@ A sample repo on how to use functions in weilei_lib. One can fork this one and u
 
 
 # How to use from this repo
+
+I use weilei_lib as a submodule here. It works like two repo, but just one inside the other. One should commit changes independently. To clone it, use the following cmd.
 ```
-git clone --recurse-submodules https://github.com/chaconinc/MainProject
+git clone --recurse-submodules https://github.com/QEC-pages/how-to-use-weilei-lib
 ```
 
 
-# sub module
+
+# info on sub module
 
 see https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
