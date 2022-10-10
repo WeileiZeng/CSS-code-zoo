@@ -1,7 +1,8 @@
 MAKEFLAGS += --no-print-directory
 
 # build options to test dynamic library
-LIB_WEILEI_PATH=/rhome/wzeng002/.local/lib
+#LIB_WEILEI_PATH=/rhome/wzeng002/.local/lib
+LIB_WEILEI_PATH=/home/weileizeng/.local/lib
 LIB_WEILEI=-L$(LIB_WEILEI_PATH) -lweilei -Iweilei_lib
 
 
@@ -10,7 +11,9 @@ INC_DIR=weilei_lib
 CXX=g++ -O3 -Wall -std=c++11 -fopenmp
 CXX=g++ -O3 -Wall -std=c++11
 # optimization options -O2 -O5 -Os
-ITPP=`pkg-config --cflags itpp` `pkg-config --libs itpp`
+#ITPP=`pkg-config --cflags itpp` `pkg-config --libs itpp`
+ITPP=`itpp-config --cflags` `itpp-config --libs`
+# $(LIB_WEILEI)
 #full command example
 #g++ `pkg-config --cflags itpp` -o hello.out hello.cpp `pkg-config --libs itpp` -fopenmp
 
@@ -20,7 +23,8 @@ header_files=$(INC_DIR)/mm_read.h $(INC_DIR)/mmio.h $(INC_DIR)/mm_write.h $(INC_
 
 #make object file for target file
 %.o:%.cpp $(header_files)
-	$(CXX) $(START) $(END) -c $<
+#	$(CXX) $(START) $(END) -c $<
+	$(CXX) $(ITPP) -c $<
 #compile object files for lib files
 lib:
 	cd weilei_lib && make all
@@ -37,6 +41,9 @@ test:
 	$(cmd)
 test_lib:
 	$(cmd)
+#because I install it locally, i need to inform where the itpp lib is located
+	export LD_LIBRARY_PATH="/home/weileizeng/.local/lib:$LD_LIBRARY_PATH" && ./$@.out
+
 #add your new files here
 
 
