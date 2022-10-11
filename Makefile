@@ -33,7 +33,7 @@ lib:
 %.out:%.o $(object_files)
 	$(CXX) $(ITPP) -o $@ $< $(object_files)
 
-cmd=make lib && make $@.o && make $@.out
+cmd=make lib && make $@.o && make $@.out && ./$@.out
 # eg: make test.o && make lib && make test.out
 product:
 	$(cmd)
@@ -42,7 +42,9 @@ test:
 test_lib:
 	$(cmd)
 #because I install it locally, i need to inform where the itpp lib is located
-	export LD_LIBRARY_PATH="/home/weileizeng/.local/lib:$LD_LIBRARY_PATH" && ./$@.out
+#	export LD_LIBRARY_PATH="/home/weileizeng/.local/lib:$LD_LIBRARY_PATH" && 
+#This was moved to .bashrc
+#	./$@.out
 
 #add your new files here
 
