@@ -10,10 +10,11 @@ LIB_WEILEI=-L$(LIB_WEILEI_PATH) -lweilei -Iweilei_lib
 INC_DIR=weilei_lib
 #INC_DIR=~/working/weilei_lib
 CXX=g++ -O3 -Wall -std=c++11 -fopenmp
-CXX=g++ -O3 -Wall -std=c++11
+#CXX=g++ -O3 -Wall -std=c++11
 # optimization options -O2 -O5 -Os
 #ITPP=`pkg-config --cflags itpp` `pkg-config --libs itpp`
-ITPP=`itpp-config --cflags` `itpp-config --libs`
+#ITPP=`itpp-config --cflags` `itpp-config --libs`
+ITPP=-I/sharedata01/weileizeng/gitrepo/install-itpp-locally/itpp-4.3.1/include -O2 -DNDEBUG -L/sharedata01/weileizeng/gitrepo/install-itpp-locally/itpp-4.3.1/lib -litpp
 # $(LIB_WEILEI)
 #full command example
 #g++ `pkg-config --cflags itpp` -o hello.out hello.cpp `pkg-config --libs itpp` -fopenmp
