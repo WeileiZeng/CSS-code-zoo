@@ -2,7 +2,8 @@ MAKEFLAGS += --no-print-directory
 
 # build options to test dynamic library
 #LIB_WEILEI_PATH=/rhome/wzeng002/.local/lib
-LIB_WEILEI_PATH=/home/weileizeng/.local/lib
+#LIB_WEILEI_PATH=/home/weileizeng/.local/lib
+LIB_WEILEI_PATH=/sharedata01/weileizeng/.local/lib
 LIB_WEILEI=-L$(LIB_WEILEI_PATH) -lweilei -Iweilei_lib
 
 
