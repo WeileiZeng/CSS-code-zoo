@@ -24,12 +24,7 @@ int main(){
 
 
 int generate_css_code(){
-//random CSS code
-  CSSCode codeR;
-  codeR.title="random code";
-  codeR.n=20;
-  codeR.Gx_row=6;
-  codeR.Gz_row=6;
+
   // codeR.id_Gx=3511;
   // codeR.id_Gz=2657;
   //codeR.generate_by_id(0);
@@ -46,16 +41,27 @@ int generate_css_code(){
   //#pragma omp parallel for num_threads(4)
 #pragma omp parallel for schedule(guided) num_threads(num_cores)
   for ( int i =0; i < num_trials; i ++ ){
+    //random CSS code
+    CSSCode codeR;
+    codeR.title="random code";
+    codeR.n=15;
+    codeR.Gx_row=6;
+    codeR.Gz_row=6;
+
     codeR.getGoodCode(0);
-    codeR.dist();
+    if ( not codeR.is_valid() ){
+      std::cout<<"The code is no valid"<<std::endl;
+    }else{
+      codeR.dist();
+    }
     //the following part should be in critical
-#pragma omp critical
+    //#pragma omp critical
     {
     if (dx_max < codeR.dx)  {
       dx_max = codeR.dx;
       std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
     }
-    if (dz_max < codeR.dx)  {
+    if (dz_max < codeR.dz)  {
       dz_max = codeR.dz ;
       std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
     }

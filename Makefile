@@ -64,7 +64,10 @@ sbatch:
 	sbatch run_prod.sh
 pkill-product:
 	pkill .product
-
+	
+#job related
+interactive:
+	salloc --nodes=1 zsh
 
 #test dynamic lib
 dynamic:$(LIB_WEILEI_PATH)/libweilei.so
