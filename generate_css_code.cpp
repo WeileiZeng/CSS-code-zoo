@@ -1,27 +1,10 @@
-#include "weilei_lib/weilei_lib.h"
-//#include <stdio.h>
-//#include <itpp/itbase.h>
-//#include <fstream>
-
-//#include <ctime> //get time in seconds
-//#include <chrono> // get time in milli seconds
-//using namespace itpp;
-//using namespace std;
+#include "weilei_lib/weilei_lib.h"  //general include goes to weilei_lib_h
 using namespace common;
 
-
-
-
-//#include "weilei_lib.h"
-
 void test_mmio();
-
 void test_getC();
-
 void test_CSS_code();
-
 void test_classical_code();
-
 int generate_css_code();
 
 int main(){
@@ -46,10 +29,11 @@ int generate_css_code(){
   codeR.n=12;
   codeR.Gx_row=5;
   codeR.Gz_row=5;
-  codeR.id_Gx=3511;
+  // codeR.id_Gx=3511;
   // codeR.id_Gz=2657;
   //codeR.generate_by_id(0);
-  codeR.getGoodCode(1);
+  itpp::RNG_randomize();
+  codeR.getGoodCode(0);
   codeR.dist();
 
   std::cout<<codeR<<std::endl;
