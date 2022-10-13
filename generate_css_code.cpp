@@ -1,4 +1,5 @@
 #include "weilei_lib/weilei_lib.h"  //general include goes to weilei_lib_h
+#include <ctime> //to get current time
 using namespace common;
 
 void test_mmio();
@@ -26,20 +27,53 @@ int generate_css_code(){
 //random CSS code
   CSSCode codeR;
   codeR.title="random code";
-  codeR.n=12;
-  codeR.Gx_row=5;
-  codeR.Gz_row=5;
+  codeR.n=20;
+  codeR.Gx_row=6;
+  codeR.Gz_row=6;
   // codeR.id_Gx=3511;
   // codeR.id_Gz=2657;
   //codeR.generate_by_id(0);
-  itpp::RNG_randomize();
-  codeR.getGoodCode(0);
-  codeR.dist();
+  //  itpp::RNG_randomize();
+  //std::cout<<codeR<<std::endl;
 
-  std::cout<<codeR<<std::endl;
+  int seed = seed+get_time(3);
+  itpp::RNG_reset(seed);
+  itpp::RNG_randomize();
+
+  int num_cores = 32; //32
+  int num_trials = num_cores * 10000;
+  int dx_max=0, dz_max=0;
+  //#pragma omp parallel for num_threads(4)
+#pragma omp parallel for schedule(guided) num_threads(num_cores)
+  for ( int i =0; i < num_trials; i ++ ){
+    codeR.getGoodCode(0);
+    codeR.dist();
+    //the following part should be in critical
+#pragma omp critical
+    {
+    if (dx_max < codeR.dx)  {
+      dx_max = codeR.dx;
+      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
+    }
+    if (dz_max < codeR.dx)  {
+      dz_max = codeR.dz ;
+      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
+    }
+    }
+    //    std::cout<<codeR.Gx<<std::endl;
+    //std::cout<<"run"<<i<<", dx="<<codeR.dx<<std::endl;
+  }
+  std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
+  
+  //  codeR.set_up_CxCz(); // no need to do it. already genrated in GetRandomCode().
+  
+
+  /*std::cout<<codeR.is_C_defined<<std::endl;
   std::cout<<codeR.Gx<<std::endl;
   std::cout<<codeR.Gz<<std::endl;
-
+  std::cout<<codeR.Cx<<std::endl;
+  std::cout<<codeR.Cz<<std::endl;
+  */
   return 0;
 }
 
