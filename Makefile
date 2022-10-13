@@ -41,6 +41,8 @@ test:
 	$(cmd)
 test_lib:
 	$(cmd)
+generate_css_code:
+	$(cmd)
 #because I install it locally, i need to inform where the itpp lib is located
 #	export LD_LIBRARY_PATH="/home/weileizeng/.local/lib:$LD_LIBRARY_PATH" && 
 #This was moved to .bashrc
