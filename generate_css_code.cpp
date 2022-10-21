@@ -35,7 +35,7 @@ int generate_css_code(){
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
 
-  int num_cores = 32; //32
+  int num_cores = 16; //32
   int num_trials = num_cores * 10000;
   int dx_max=0, dz_max=0;
   //#pragma omp parallel for num_threads(4)
@@ -44,9 +44,10 @@ int generate_css_code(){
     //random CSS code
     CSSCode codeR;
     codeR.title="random code";
-    codeR.n=15;
-    codeR.Gx_row=6;
-    codeR.Gz_row=6;
+    // good choice: 15,6,6;
+    codeR.n=20;
+    codeR.Gx_row=9;
+    codeR.Gz_row=9;
 
     codeR.getGoodCode(0);
     if ( not codeR.is_valid() ){
@@ -59,11 +60,13 @@ int generate_css_code(){
     {
     if (dx_max < codeR.dx)  {
       dx_max = codeR.dx;
-      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
+      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max;
+      std::cout<<codeR<<std::endl;
     }
     if (dz_max < codeR.dz)  {
       dz_max = codeR.dz ;
-      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
+      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max;
+      std::cout<<codeR<<std::endl;
     }
     }
     //    std::cout<<codeR.Gx<<std::endl;
