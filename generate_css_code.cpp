@@ -16,17 +16,11 @@ int main(){
 
 int generate_css_code(){
 
-  // codeR.id_Gx=3511;
-  // codeR.id_Gz=2657;
-  //codeR.generate_by_id(0);
-  //  itpp::RNG_randomize();
-  //std::cout<<codeR<<std::endl;
-
   int seed = seed+common::get_time(3);
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
 
-  int num_cores = 1; //32
+  int num_cores = 16; //32
   int num_trials = num_cores * 10000;
   int dx_max=0, dz_max=0;
   //#pragma omp parallel for num_threads(4)
