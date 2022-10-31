@@ -1,6 +1,6 @@
 #include "weilei_lib/weilei_lib.h"  //general include goes to weilei_lib_h
-#include <ctime> //to get current time
-using namespace common;
+//#include <ctime> //to get current time
+//using namespace common;
 
 int generate_css_code();
 
@@ -20,7 +20,7 @@ int generate_css_code(){
   //  itpp::RNG_randomize();
   //std::cout<<codeR<<std::endl;
 
-  int seed = seed+get_time(3);
+  int seed = seed+common::get_time(3);
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
 
