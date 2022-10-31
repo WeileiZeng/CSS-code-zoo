@@ -34,14 +34,15 @@ int generate_css_code(){
     codeR.Gx_row=15;
     codeR.Gz_row=5;
 
-    codeR.getGoodCode(0);
-    if ( not codeR.is_valid() ){
-      std::cout<<"The code is no valid"<<std::endl;
+    codeR.getGoodCode(0);//0 for disabling debug
+    codeR.dist();
+    /* if ( not codeR.is_valid() ){
+      std::cout<<"The code is not valid"<<std::endl;
     }else{
       codeR.dist();
-    }
-    //the following part should be in critical
-    //#pragma omp critical
+      }*/
+    //the following part should be in critical in the beginning, after some run it is okay to remove
+//#pragma omp critical
     {
       /*
     if (dx_max <= codeR.dx)  {
@@ -98,7 +99,7 @@ int generate_css_code(){
 	fclose(f);
       }
     }
-
+    
     }
     //    std::cout<<codeR.Gx<<std::endl;
     //std::cout<<"run"<<i<<", dx="<<codeR.dx<<std::endl;
