@@ -1,4 +1,6 @@
 #include "weilei_lib/weilei_lib.h"  //general include goes to weilei_lib_h
+#include "json.hpp"
+using json=nlohmann::json;
 //#include <ctime> //to get current time
 //using namespace common;
 
@@ -47,6 +49,7 @@ int generate_css_code(){
     //the following part should be in critical
     //#pragma omp critical
     {
+      /*
     if (dx_max <= codeR.dx)  {
       dx_max = codeR.dx;
       codeR.k=codeR.n - codeR.Gx.row_rank() - codeR.Gz.row_rank();
@@ -59,10 +62,10 @@ int generate_css_code(){
       std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max;
       std::cout<<"; "<<codeR<<std::endl;
     }
-
+      */
     //check if file exists. saev the code if not
     //set up filename
-    std::string title_str="../data/CSSCode/run1/";
+    std::string title_str="../data/CSS-Codes/run1/";
     int d =(codeR.dx < codeR.dz)? codeR.dx : codeR.dz ;
     int Gx_row_rank = codeR.Gx.row_rank(), Gz_row_rank = codeR.Gz.row_rank();
     codeR.k=codeR.n - Gx_row_rank - Gz_row_rank;
@@ -71,20 +74,33 @@ int generate_css_code(){
       +"-x"+std::to_string(Gx_row_rank)+"z"+std::to_string(Gz_row_rank)
       +"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
 
-
     FILE *f;
-    for (int j = 0; j++; j<4){//save three instances for the same parameter
+    for (int j = 1; j<4; j++){//save three instances for the same parameter
+      //      std::cout<<"debug:1"<<std::endl;
       //filename_prefix = filename_prefix + "-"+std::to_string(j);
-      std::string filename_Gx = filename_prefix + "-"+std::to_string(j) + "Gx.mm";
-      const char* filename = filename_Gx.c_str();
-      std::cout<<j<<std::endl;
+      char filename_Gx[256],filename_Gz[256],filename_json[256];
+      sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
+      sprintf(filename_Gz,"%s-%iGz.mm",filename_prefix.c_str(),j);
+      sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
+
+      //      std::string filename_Gx = filename_prefix + "-"+std::to_string(j) + "Gx.mm";
+      //std::string filename_json = filename_prefix + "-"+std::to_string(j) + ".json";
+      //      const char* filename = filename_Gx.c_str();
+      const char* filename = filename_Gx;
+      //std::cout<<j<<std::endl;
       if ((f = fopen(filename, "r")) == NULL) {
 	//save the code if file doesn't exist yet
-	std::cout<<"saving code"<<filename<<std::endl;
-	codeR.save(filename_prefix + "-" + std::to_string(j) );
-	std::cout<<"saved code to "<<filename_prefix<<std::endl;
+	//std::cout<<"saving code: "<<filename<<std::endl;
+	//codeR.save(filename_prefix + "-" + std::to_string(j) );
+	//itpp::GF2mat Gt = codeR.Gz;
+	//	std::cout<<filename_Gz<<std::endl;
+	GF2mat_to_MM(codeR.Gz,filename_Gx);
+	GF2mat_to_MM(codeR.Gz,filename_Gz);
+	//	GF2mat_to_MM(codeR.Gz,filename_
+	std::cout<<"saved code to "<<filename_json<<std::endl;
+	break;
       }else{
-	std::cout<<"the file exist: "<<filename_prefix<<std::endl;
+	//std::cout<<"the file exist: "<<filename_prefix<<std::endl;
 	fclose(f);
       }
     }
