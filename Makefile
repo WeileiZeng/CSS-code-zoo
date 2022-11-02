@@ -35,7 +35,7 @@ lib:
 %.out:%.o $(object_files)
 	$(CXX) $(ITPP) -o $@ $< $(object_files)
 
-cmd=make lib && make $@.o && make $@.out && ./$@.out
+cmd=make lib && make $@.o && make $@.out #&& ./$@.out
 # eg: make test.o && make lib && make test.out
 product:
 	$(cmd)
@@ -62,12 +62,16 @@ sbatch-dry-run:
 	sbatch --test run_prod.sh
 sbatch:
 	sbatch run_prod.sh
+srun:
+	srun -n 1 --cpus-per-task=32 --time=12:00:00 ./generate_css_code.out 
+short:
+	srun -n 1 -q short --cpus-per-task=32 --time=1:00:00 ./generate_css_code.out 
 pkill-product:
 	pkill .product
 
 #job related
 interactive:
-	salloc --nodes=1 zsh
+	salloc --nodes=1
 
 #test dynamic lib
 dynamic:$(LIB_WEILEI_PATH)/libweilei.so
@@ -75,3 +79,7 @@ dynamic:$(LIB_WEILEI_PATH)/libweilei.so
 	$(CXX) $(ITPP) -o test_dynamic.out test.cpp -lweilei -L$(LIB_WEILEI_PATH)
 	./test_dynamic.out
 
+
+data-statistics:
+	du -sh data/
+	ls data/ |wc -l
