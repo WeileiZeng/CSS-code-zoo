@@ -14,9 +14,19 @@ int main(){
   //  generate_css_code();
 
   //set up simulation
-  for (int n=12;n<21;n++){
+  /*
+  for (int n=12;n<31;n++){
     for ( int Gx_row = 5;Gx_row<n-1;Gx_row++){
       for ( int Gz_row = 5; Gz_row < n-Gx_row-1 && Gz_row < Gx_row +3 ; Gz_row ++){
+
+  for (int n=7;n<12;n++){
+
+   */
+
+
+  for (int n=2;n<34;n++){
+    for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
+      for ( int Gz_row = 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){
 	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<", Gz_row="<<Gz_row<<std::endl;
 
 	auto start = std::chrono::system_clock::now();
@@ -110,7 +120,7 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
       +"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
 
     FILE *f;
-    for (int j = 1; j<4; j++){//save three instances for the same parameter
+    for (int j = 0; j<10; j++){//save three instances for the same parameter
       //      std::cout<<"debug:1"<<std::endl;
       //filename_prefix = filename_prefix + "-"+std::to_string(j);
       char filename_Gx[256],filename_Gz[256],filename_json[256];
