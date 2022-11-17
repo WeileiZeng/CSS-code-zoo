@@ -21,12 +21,16 @@ int main(){
 
   for (int n=7;n<12;n++){
 
+  for (int n=2;n<34;n++){  #didn't get up to 34 due to error (submatrix)
+    for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
+      for ( int Gz_row = 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){
+
    */
 
 
-  for (int n=2;n<34;n++){
+  for (int n=13;n<31;n++){
     for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
-      for ( int Gz_row = 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){
+      for ( int Gz_row = ( 2 > n-Gx_row - 2)? 2 : n-Gx_row - 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //start from k=2, then k = 1
 	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<", Gz_row="<<Gz_row<<std::endl;
 
 	auto start = std::chrono::system_clock::now();
