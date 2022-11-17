@@ -50,7 +50,7 @@ def main():
 
     num_of_codes=0   
     n,k,d=-1,-1,-1
-    max_distance_table=[[ 0 for k in range(25)] for n in range(35) ]
+    max_distance_table=[[ 0 for k in range(25)] for n in range(31) ]
     max_distance_table[0]=[_ % 10 for _ in range(25)]
     # d=table[n][k]
 

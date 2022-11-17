@@ -8,7 +8,9 @@ folder=../data/CSS-Codes/${trial}
 echo start generating json file list for folder ${folder}
 echo this may take ~1 minute
 
-find ${folder} -name "*json" | cut -c 24- > filelist-${trial}.txt 
+#find ${folder} -name "*json" | cut -c 24- > filelist-${trial}.txt 
+#reduce file amount to 1/10
+find ${folder} -name "*-0.json" | cut -c 24- > filelist-${trial}.txt 
 
 echo "number of files: `wc -l filelist-${trial}.txt`" 
 
