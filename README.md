@@ -1,3 +1,5 @@
+developing on branch [qlab](https://github.com/PhysAIzhijiang/CSS-code-zoo/tree/qlab)
+
 # reasults on searching good CSS codes
 
 n=20, G_x_row=9, G_z_row=9, d=[2,5],[4,2]
@@ -7,6 +9,7 @@ n=22,         9          9    [4,3]
 
 Renyu's example:
 n0=11  [ 0, 3 ] [0,1]   n=22 dX=4 dZ=5 d0=4
+
 
 # how-to-use-weilei-lib
 A sample repo on how to use functions in weilei_lib. One can fork this one and use it as a starting point
