@@ -1,9 +1,13 @@
 #Use this script to try the command multiple times
 
-for i in {1..10}
+date
+
+for i in {1..100}
 do
-    echo hello $i
+    echo Trial: $i/100 `date`
     make srun
 done
-
 echo finish
+
+
+date
