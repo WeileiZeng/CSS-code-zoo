@@ -40,27 +40,30 @@ int main(){
       //    std::cout<<code.Gz<<std::endl;
     
 
-    int num_data=10;
+    const int num_data=13;
     double p_qubit[num_data], p_block[num_data];
-    double p = 0.01;
+    double p = 0.001;
     std::map<double,double> data_map;
+    const int e_try = 1000000;//1,000,000 for Steane codes
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
-      p_block[i] = code.simulate(p, 10000); 
+      p_block[i] = code.simulate(p, e_try); 
       data_map[p_qubit[i]]=p_block[i];
       p += 0.01;
     }
     
     json::object_t object_value={
       {"data_map",data_map},
-      {"note","something"},
+      {"note","Steane Codes [[7,1,3]]"},
+      {"e_try",e_try},
+      {"num_data",num_data},
     };
     json j_object_t(object_value);
     //json j_object_t(data_map);
     //    char filename_json[256];
     //sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
     //    std::ofstream filejson(filename_json);
-    std::ofstream filejson("tmp.json");
+    std::ofstream filejson("steane.json");
     filejson << j_object_t;
     filejson.close();
     //    std::cout<<"saved simulation data to "<<filename_json<<std::endl;
