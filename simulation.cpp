@@ -7,12 +7,23 @@ using json=nlohmann::json;
 //using namespace common;
 
 
-
-int main(){
+/** Decoding simulation for given CSS code using random window decoder
+ *@param debug
+ */
+int main(int args, char ** argv){
   //generate code or read from file
   //run simulation
   //output result as json
     std::cout<<"============begin simulation========="<<std::endl;
+    //read parameter
+    itpp::Parser parser;parser.init(args,argv);
+    //    parser.set_silentmode(true);
+    int num_cores=1; parser.get(num_cores,"num_cores");
+    std::string note="no-note"; parser.get(note,"note");
+    int debug=1; parser.get(debug,"debug");//default debug on
+    std::string output_json ="tmp.json"; parser.get(output_json,"output");
+    int e_try=100; parser.get(e_try,"e_try");
+
     CSSCode code;
     code.n = 7;
     code.title="Quantum hamming 713 code";
@@ -44,10 +55,10 @@ int main(){
     double p_qubit[num_data], p_block[num_data];
     double p = 0.001;
     std::map<double,double> data_map;
-    const int e_try = 1000000;//1,000,000 for Steane codes
+    //    const int e_try = 1000000;//1,000,000 for Steane codes
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
-      p_block[i] = code.simulate(p, e_try); 
+      p_block[i] = code.simulate(p, e_try, num_cores); 
       data_map[p_qubit[i]]=p_block[i];
       p += 0.01;
     }
@@ -63,7 +74,8 @@ int main(){
     //    char filename_json[256];
     //sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
     //    std::ofstream filejson(filename_json);
-    std::ofstream filejson("steane.json");
+    //    std::ofstream filejson("steane.json");
+    std::ofstream filejson(output_json);
     filejson << j_object_t;
     filejson.close();
     //    std::cout<<"saved simulation data to "<<filename_json<<std::endl;
