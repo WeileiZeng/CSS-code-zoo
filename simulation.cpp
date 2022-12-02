@@ -23,20 +23,33 @@ int main(int args, char ** argv){
     int debug=1; parser.get(debug,"debug");//default debug on
     std::string output_json ="tmp.json"; parser.get(output_json,"output");
     int e_try=100; parser.get(e_try,"e_try");
+    std::string code_prefix="NA";
+    parser.get(code_prefix,"code_prefix");
 
+    //get code from file
     CSSCode code;
-    code.n = 7;
-    code.title="Quantum hamming 713 code";
-    code.get_713_code();
-    //  std::cout<<code<<std::endl;
+    int mode = 2;
+    switch (mode){
+    case 1: //Steane code      
+      code.n = 7;
+      code.title="Steane 713 code";
+      code.get_713_code();
+      break;
+    case 2://from file
+      code.load(code_prefix);
+      break;
+    }
+    std::cout<<code<<std::endl;
     //  code.full_rank();
-    //  code.info();
+    code.info();
+
+
     //  code.d =
     code.dist();
     code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
     //std::cout<<"[7,1,3] Hamming code: dx="<<code.dx<<std::endl;
     std::cout<<code<<std::endl;
-    std::cout<<"finish generating Steane code"<<std::endl;
+    std::cout<<"finish generating code"<<std::endl;
 
     //  double decode(itpp::GF2mat Gx, itpp::GF2mat Gz, double p)
 
@@ -46,10 +59,12 @@ int main(int args, char ** argv){
     //  double p_block = simulate(code.Gx, code.Gz, p);
 
 
+
       // code.simulate(p);
       //    code.info();
       //    std::cout<<code.Gz<<std::endl;
     
+    if (debug) std::cout<<"before simulate()"<<std::endl;
 
     const int num_data=13;
     double p_qubit[num_data], p_block[num_data];
@@ -58,7 +73,7 @@ int main(int args, char ** argv){
     //    const int e_try = 1000000;//1,000,000 for Steane codes
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
-      p_block[i] = code.simulate(p, e_try, num_cores); 
+      p_block[i] = code.simulate(p, e_try, num_cores, debug); 
       data_map[p_qubit[i]]=p_block[i];
       p += 0.01;
     }
