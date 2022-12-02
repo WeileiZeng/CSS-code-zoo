@@ -1,3 +1,8 @@
+## TODO
+- [ ] proessing-codes.py can be parallelized using `multiprocessing.pool`
+- [ ] `get-filelist.sh` and `processing-codes.py` can move to a jupyter notebook
+
+
 developing on branch [qlab](https://github.com/PhysAIzhijiang/CSS-code-zoo/tree/qlab)
 
 # reasults on searching good CSS codes
