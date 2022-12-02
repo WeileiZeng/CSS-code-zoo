@@ -50,8 +50,8 @@ def main():
 
     num_of_codes=0   
     n,k,d=-1,-1,-1
-    max_distance_table=[[ 0 for k in range(25)] for n in range(31) ]
-    max_distance_table[0]=[_ % 10 for _ in range(25)]
+    max_distance_table=[[ 0 for k in range(28)] for n in range(31) ]
+    max_distance_table[0]=[_ % 10 for _ in range(28)]
     # d=table[n][k]
 
     for line in fileinput.input(filename_list):

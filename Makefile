@@ -83,6 +83,10 @@ dynamic:$(LIB_WEILEI_PATH)/libweilei.so
 	./test_dynamic.out
 
 
+#steps to collect code date
+#currently takes 1 minutes
+#./get-filelist.sh
+#./processing-codes.py
 data-statistics:
 	du -sh data/
 	ls data/ |wc -l
