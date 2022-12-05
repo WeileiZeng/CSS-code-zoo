@@ -25,11 +25,13 @@ int main(int args, char ** argv){
     int e_try=100; parser.get(e_try,"e_try");
     std::string code_prefix="NA";
     parser.get(code_prefix,"code_prefix");
+    int mode = 3; parser.get(mode,"mode");
 
-    //get code from file
+    //initialize code
     CSSCode code;
-    int mode = 2;
     switch (mode){
+    case 0://check mode. print information and quit
+      break;
     case 1: //Steane code      
       code.n = 7;
       code.title="Steane 713 code";
@@ -38,18 +40,16 @@ int main(int args, char ** argv){
     case 2://from file
       code.load(code_prefix);
       break;
+    default:
+      std::cout<<"Hint: choose mode in {0,1,2}; program exit"<<std::endl;
+      return 0;
     }
-    std::cout<<code<<std::endl;
-    //  code.full_rank();
-    code.info();
 
-
-    //  code.d =
     code.dist();
     code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
-    //std::cout<<"[7,1,3] Hamming code: dx="<<code.dx<<std::endl;
     std::cout<<code<<std::endl;
-    std::cout<<"finish generating code"<<std::endl;
+    code.info();
+    std::cout<<"Finish generating code"<<std::endl;
 
     //  double decode(itpp::GF2mat Gx, itpp::GF2mat Gz, double p)
 
@@ -58,7 +58,7 @@ int main(int args, char ** argv){
     //  double p_block_2 = code.simulate(p);
     //  double p_block = simulate(code.Gx, code.Gz, p);
 
-
+    return 0;
 
       // code.simulate(p);
       //    code.info();
@@ -80,8 +80,10 @@ int main(int args, char ** argv){
     
     json::object_t object_value={
       {"data_map",data_map},
-      {"note","Steane Codes [[7,1,3]]"},
+      {"note",note},
+      {"title",code_prefix},
       {"e_try",e_try},
+      {"num_cores",num_cores},
       {"num_data",num_data},
     };
     json j_object_t(object_value);
@@ -95,12 +97,6 @@ int main(int args, char ** argv){
     filejson.close();
     //    std::cout<<"saved simulation data to "<<filename_json<<std::endl;
 
-    /*
-    for ( double pp = 0.01; pp < 0.11; pp += 0.01 ){
-      code.simulate(pp);
-      break;
-    }
-    */
     std::cout<<"finish test_decode"<<std::endl;
     return 0;
 
