@@ -67,14 +67,15 @@ int main(int args, char ** argv){
 
     const int num_data=13;
     double p_qubit[num_data], p_block[num_data];
-    double p = 0.001;
+    //    double p = 0.001;
+    double p = 0.1;
     std::map<double,double> data_map;
     //    const int e_try = 1000000;//1,000,000 for Steane codes
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
       p_block[i] = code.simulate(p, e_try, num_cores, debug); 
       data_map[p_qubit[i]]=p_block[i];
-      p += 0.01;
+      p /= 1.2;
     }
     
     json::object_t object_value={
