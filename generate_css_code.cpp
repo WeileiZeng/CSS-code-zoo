@@ -11,36 +11,11 @@ int generate_css_code(int n, int Gx_row, int Gz_row);
 
 int main(){
   std::cout<<" --------------------- begin generating CSS codes"<<std::endl;
-  //  generate_css_code();
-
   //set up simulation
-  /*
-  for (int n=12;n<31;n++){
-    for ( int Gx_row = 5;Gx_row<n-1;Gx_row++){
-      for ( int Gz_row = 5; Gz_row < n-Gx_row-1 && Gz_row < Gx_row +3 ; Gz_row ++){
-
-  for (int n=7;n<12;n++){
-
-  for (int n=2;n<34;n++){  #didn't get up to 34 due to error (submatrix)
-    for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
-      for ( int Gz_row = 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){
-
-  for (int n=13;n<31;n++){
-
-  for (int n=29;n<31;n++){
-    for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
-      for ( int Gz_row = ( 2 > n-Gx_row - 2)? 2 : n-Gx_row - 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //start from k=2, then k = 1
-  for (int n=29;n<31;n++){
-    for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
-      for ( int Gz_row = 2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 && n-Gx_row-Gz_row > 15; Gz_row ++){ //run for k > 15
-
-   */
-
-
-  for (int n=27;n<31;n++){
+  for (int n=5;n<10;n++){
     for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
       //	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<std::endl;
-      for ( int Gz_row = 2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 && n-Gx_row-Gz_row > 22; Gz_row ++){ //run for k > 22
+      for ( int Gz_row = 2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
 	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<", Gz_row="<<Gz_row<<std::endl;
 
 	auto start = std::chrono::system_clock::now();
@@ -58,11 +33,6 @@ int main(){
       }
     }
   }
-  /*simulation log
-    run: n=8..13, Gx_row and Gz_row = 2..n-1
-    n=21..30
-    n=12..19
-   */
   
   std::cout<<" --------------------- finish generating CSS codes"<<std::endl;
   return 0;
@@ -96,35 +66,12 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
 
     codeR.getGoodCode(0);//0 for disabling debug
     codeR.dist();
-    /* if ( not codeR.is_valid() ){
-      std::cout<<"The code is not valid"<<std::endl;
-    }else{
-       //       try{
-       codeR.dist();
-	 //       }catch(std::exception e){
-	 //	 std::cout<<"The code is not valid. probably zero matrix"<<std::endl;
-	 //       }
-	 }*/
     //the following part should be in critical in the beginning, after some run it is okay to remove
-//#pragma omp critical
+#pragma omp critical
     {
-      /*
-    if (dx_max <= codeR.dx)  {
-      dx_max = codeR.dx;
-      codeR.k=codeR.n - codeR.Gx.row_rank() - codeR.Gz.row_rank();
-      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max;
-      std::cout<<"; "<<codeR<<std::endl;
-    }
-    if (dz_max <= codeR.dz)  {
-      dz_max = codeR.dz ;
-      codeR.k=codeR.n - codeR.Gx.row_rank() - codeR.Gz.row_rank();
-      std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max;
-      std::cout<<"; "<<codeR<<std::endl;
-    }
-      */
-    //check if file exists. saev the code if not
+      //check if file exists. save the code if not
     //set up filename
-    std::string title_str="../data/CSS-Codes/run1/";
+    std::string title_str="../data/CSS-Codes/run2/";
     int d =(codeR.dx < codeR.dz)? codeR.dx : codeR.dz ;
     int Gx_row_rank = codeR.Gx.row_rank(), Gz_row_rank = codeR.Gz.row_rank();
     codeR.k=codeR.n - Gx_row_rank - Gz_row_rank;
@@ -135,7 +82,6 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
 
     FILE *f;
     for (int j = 0; j<10; j++){//save three instances for the same parameter
-      //      std::cout<<"debug:1"<<std::endl;
       //filename_prefix = filename_prefix + "-"+std::to_string(j);
       char filename_Gx[256],filename_Gz[256],filename_json[256];
       sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
@@ -149,10 +95,18 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
       //std::cout<<j<<std::endl;
       if ((f = fopen(filename, "r")) == NULL) {
 	//save the code if file doesn't exist yet
-	//std::cout<<"saving code: "<<filename<<std::endl;
-	//codeR.save(filename_prefix + "-" + std::to_string(j) );
-	//itpp::GF2mat Gt = codeR.Gz;
-	//	std::cout<<filename_Gz<<std::endl;
+
+	//check 10 times before add the code
+	int d=codeR.d;
+	for (int i_check=0;i_check < 10; i_check ++){
+	  codeR.dist();
+	  if ( codeR.d < d){
+	    //discard the code
+	    std::cout<<"d="<<d<<", code.d="<<codeR.d<<std::endl;
+	    continue;
+	  }
+	}
+
 	GF2mat_to_MM(codeR.Gz,filename_Gx);
 	GF2mat_to_MM(codeR.Gz,filename_Gz);
 
