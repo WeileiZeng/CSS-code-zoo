@@ -31,6 +31,15 @@ int main(int args, char ** argv){
     CSSCode code;
     switch (mode){
     case 0://check mode. print information and quit
+      std::cout<<"Printing code info:"<<std::endl;
+      code.load(code_prefix);
+      code.title=note;
+      code.dist();
+      code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
+      std::cout<<code<<std::endl;
+      //      code.info();
+      std::cout<<"Finish checking code; exit the program; no simulation has been ran."<<std::endl;
+      return 0;
       break;
     case 1: //Steane code      
       code.n = 7;
@@ -39,6 +48,7 @@ int main(int args, char ** argv){
       break;
     case 2://from file
       code.load(code_prefix);
+      code.title=note;
       break;
     default:
       std::cout<<"Hint: choose mode in {0,1,2}; program exit"<<std::endl;
@@ -48,21 +58,10 @@ int main(int args, char ** argv){
     code.dist();
     code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
     std::cout<<code<<std::endl;
-    code.info();
     std::cout<<"Finish generating code"<<std::endl;
-
-    //  double decode(itpp::GF2mat Gx, itpp::GF2mat Gz, double p)
 
     code.Gx = common::make_it_full_rank(code.Gx);
     code.Gz = common::make_it_full_rank(code.Gz);
-    //  double p_block_2 = code.simulate(p);
-    //  double p_block = simulate(code.Gx, code.Gz, p);
-
-    return 0;
-
-      // code.simulate(p);
-      //    code.info();
-      //    std::cout<<code.Gz<<std::endl;
     
     if (debug) std::cout<<"before simulate()"<<std::endl;
 
