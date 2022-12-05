@@ -12,7 +12,7 @@ int generate_css_code(int n, int Gx_row, int Gz_row);
 int main(){
   std::cout<<" --------------------- begin generating CSS codes"<<std::endl;
   //set up simulation
-  for (int n=5;n<10;n++){
+  for (int n=5;n<25;n++){
     for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
       //	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<std::endl;
       for ( int Gz_row = 2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
@@ -50,7 +50,7 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
 
-  int num_cores = 32; //32
+  int num_cores = 16; //32
   int num_trials = num_cores * 10;
   int dx_max=0, dz_max=0;
   //#pragma omp parallel for num_threads(4)
@@ -81,7 +81,7 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
       +"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
 
     FILE *f;
-    for (int j = 0; j<10; j++){//save three instances for the same parameter
+    for (int j = 0; j<10; j++){//save 10 instances for the same parameter
       //filename_prefix = filename_prefix + "-"+std::to_string(j);
       char filename_Gx[256],filename_Gz[256],filename_json[256];
       sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
@@ -104,6 +104,8 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
 	    //discard the code
 	    std::cout<<"d="<<d<<", code.d="<<codeR.d<<std::endl;
 	    continue;
+	  }else{
+	    std::cout<<".";
 	  }
 	}
 
@@ -135,23 +137,11 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
 	//std::cout<<"the file exist: "<<filename_prefix<<std::endl;
 	fclose(f);
       }
-    }
+    }//for j
     
-    }
-    //    std::cout<<codeR.Gx<<std::endl;
-    //std::cout<<"run"<<i<<", dx="<<codeR.dx<<std::endl;
-  }
-  //  std::cout<<"dx_max = "<<dx_max<<", dz_max = "<<dz_max<<std::endl;
-  
-  //  codeR.set_up_CxCz(); // no need to do it. already genrated in GetRandomCode().
-  
+    }//pragma critical
+  }// pragma parallel for
 
-  /*std::cout<<codeR.is_C_defined<<std::endl;
-  std::cout<<codeR.Gx<<std::endl;
-  std::cout<<codeR.Gz<<std::endl;
-  std::cout<<codeR.Cx<<std::endl;
-  std::cout<<codeR.Cz<<std::endl;
-  */
   return 0;
 }
 
