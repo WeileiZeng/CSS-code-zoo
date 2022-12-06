@@ -99,8 +99,10 @@ run_generate:
 data-statistics:
 	du -sh data/
 	ls data/ |wc -l
-
-show-result:
+show-new-codes:
+	echo "total number of codes generated in this run"
+	cat log/generate*.log |grep save|wc -l
+show-table:
 	tail -n 31 run.log
 
 
