@@ -6,12 +6,21 @@ import fileinput     #read (json) files
 import json
 import datetime
 
+def dot_row(row):
+    s=''
+    for i in str(row):
+        if i == '0' or i == ',':
+            s += ' '
+        else:
+            s += i
+    return s
+
 def pretty_2D_list(table):
     n=0
     string = ''
     for row in table[n:]:
-        print('    n='+str(n)+':\t'+str(row))
-        string += 'n='+str(n)+':\t'+str(row) +'\n'
+        print('    n='+str(n)+':\t'+dot_row(row))
+        string += 'n='+str(n)+':\t'+dot_row(row) +'\n'
         n+=1
     return string
 #        print(row)
@@ -36,10 +45,10 @@ def main():
     Invalid json will be skipped and reported. They exist due to parallel file writing when generating codes on qlab''')
     data_folder = "json1"
 #    data_folder = "codes" 
-    data_folder = '../data/CSS-Codes/run1'
+    data_folder = '../data/CSS-Codes/run2'
     trash_folder = '../data/CSS-Codes/trash'
 #    filename_list = '../data/CSS-Codes/filelist-run1.txt'
-    filename_list = 'filelist-run1.txt'  #./get-filelist.sh
+    filename_list = 'filelist-run2.txt'  #./get-filelist.sh
     log_file = 'run.log'
 
     print('data_folder:\t'+data_folder)
