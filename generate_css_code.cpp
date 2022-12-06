@@ -7,12 +7,19 @@ using json=nlohmann::json;
 //using namespace common;
 
 //int generate_css_code();
-int generate_css_code(int n, int Gx_row, int Gz_row);
+int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder);
 
-int main(){
+int main(int args, char ** argv){
   std::cout<<" --------------------- begin generating CSS codes"<<std::endl;
+  itpp::Parser parser; parser.init(args,argv);
+  int n_start=5; parser.get(n_start,"n_start");
+  int n_end=10; parser.get(n_end,"n_end");
+  int num_cores=1; parser.get(num_cores,"num_cores");
+  std::string code_folder="../data/CSS-Codes/tmp/";
+  parser.get(code_folder,"code_folder");
+
   //set up simulation
-  for (int n=5;n<25;n++){
+  for (int n=n_start;n<n_end;n++){
     for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
       //	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<std::endl;
       for ( int Gz_row = 2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
@@ -23,7 +30,7 @@ int main(){
 	std::cout <<".-.-.-.-.-.-.-.-.-.-.-."
 		  << "start computation at " << std::ctime(&start_time)<<std::endl;
 
-	generate_css_code(n,Gx_row,Gz_row);
+	generate_css_code(n,Gx_row,Gz_row,num_cores,code_folder);
 	//When G_x_row or Gz_row is too small (like 1), error occurs, probably get zero matrix somewhere
 
 	auto end = std::chrono::system_clock::now();
@@ -44,16 +51,15 @@ int main(){
   how many instances to save for each parameter set, 3
   data folder, ../data/CSS-Codes/run1
  */
-int generate_css_code(int n, int Gx_row, int Gz_row){
+int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder){
   //int generate_css_code(){
   int seed = common::get_time(3)+100;//+seed;
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
 
-  int num_cores = 16; //32
+  //  int num_cores = 16; //32
   int num_trials = num_cores * 10;
   int dx_max=0, dz_max=0;
-  //#pragma omp parallel for num_threads(4)
 #pragma omp parallel for schedule(guided) num_threads(num_cores)
   for ( int i =0; i < num_trials; i ++ ){
     //random CSS code
@@ -71,11 +77,11 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
     {
       //check if file exists. save the code if not
     //set up filename
-    std::string title_str="../data/CSS-Codes/run2/";
+      //    std::string title_str="../data/CSS-Codes/run2/";
     int d =(codeR.dx < codeR.dz)? codeR.dx : codeR.dz ;
     int Gx_row_rank = codeR.Gx.row_rank(), Gz_row_rank = codeR.Gz.row_rank();
     codeR.k=codeR.n - Gx_row_rank - Gz_row_rank;
-    std::string filename_prefix=title_str
+    std::string filename_prefix=code_folder
       +"n"+std::to_string(codeR.n)+"k"+std::to_string(codeR.k)+"d"+std::to_string(d)
       +"-x"+std::to_string(Gx_row_rank)+"z"+std::to_string(Gz_row_rank)
       +"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
