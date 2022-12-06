@@ -96,6 +96,7 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
       if ((f = fopen(filename, "r")) == NULL) {
 	//save the code if file doesn't exist yet
 
+	/*don't check here. break the parallel set up
 	//check 10 times before add the code
 	int d=codeR.d;
 	for (int i_check=0;i_check < 10; i_check ++){
@@ -108,8 +109,8 @@ int generate_css_code(int n, int Gx_row, int Gz_row){
 	    std::cout<<".";
 	  }
 	}
-
-	GF2mat_to_MM(codeR.Gz,filename_Gx);
+	*/
+	GF2mat_to_MM(codeR.Gx,filename_Gx);
 	GF2mat_to_MM(codeR.Gz,filename_Gz);
 
 	//save parameters into json file
