@@ -47,6 +47,8 @@ generate_css_code:
 	$(cmd)
 simulation:
 	$(cmd)
+verification:
+	$(cmd)
 #if it keep running. clean and rebuild weilei_lib
 #because I install it locally, i need to inform where the itpp lib is located
 #	export LD_LIBRARY_PATH="/home/weileizeng/.local/lib:$LD_LIBRARY_PATH" && 
@@ -82,6 +84,13 @@ dynamic:$(LIB_WEILEI_PATH)/libweilei.so
 	$(CXX) $(ITPP) -o test_dynamic.out test.cpp -lweilei -L$(LIB_WEILEI_PATH)
 	./test_dynamic.out
 
+
+run_verification:
+	./verification num_cores=16
+run_simulation:
+	./run_simulation.sh
+run_generate:
+	sbatch sbatch_generate.sh
 
 #steps to collect code date
 #currently takes 1 minutes
