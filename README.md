@@ -1,7 +1,11 @@
+see [CSS Code table](zoo.ipynb)
+
 ## TODO
 - [ ] proessing-codes.py can be parallelized using `multiprocessing.pool`
 - [ ] `get-filelist.sh` and `processing-codes.py` can move to a jupyter notebook
-
+- [x] speed up simulation. quick pass for w<(d-1)/2
+- [ ] check all codes instead of index zero
+- [ ] clear readme files. show table here
 
 developing on branch [qlab](https://github.com/PhysAIzhijiang/CSS-code-zoo/tree/qlab)
 
