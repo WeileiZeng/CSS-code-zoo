@@ -2,3 +2,6 @@ outdated/
 *.o
 *.out
 *~
+data
+run1
+run2
