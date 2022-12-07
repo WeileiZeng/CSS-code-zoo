@@ -48,6 +48,7 @@ int main(int args, char ** argv){
     //get number of codes
     const int code_total=count_lines(filename_list);
     std::cout<<"Number of codes: "<<code_total<<std::endl;
+    std::cout<<"No printing on srun due to slow network"<<std::endl;
     int code_count=0,code_mistake=0;
     std::ifstream file(filename_list);
     if (file.is_open()) {
