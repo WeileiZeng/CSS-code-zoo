@@ -8,14 +8,18 @@ using json=nlohmann::json;
 
 
 /** Decoding simulation for given CSS code using random window decoder
- *@param debug
+ *@param num_cores
+ *@param note
+ *@param debug 
+ *@param output_json save simulation result
+ *@param e_try number of errors to be simulated for each data point
+ *@param code_prefix prefix to find the code
+ *@param mode 0 for check; 1 for Steane; 2 for reading code file
+ *@return None. simulateion result saved in json file.
  */
 int main(int args, char ** argv){
-  //generate code or read from file
-  //run simulation
-  //output result as json
     std::cout<<"============begin simulation========="<<std::endl;
-    //read parameter
+    //parse parameter
     itpp::Parser parser;parser.init(args,argv);
     //    parser.set_silentmode(true);
     int num_cores=1; parser.get(num_cores,"num_cores");
@@ -87,17 +91,11 @@ int main(int args, char ** argv){
       {"num_data",num_data},
     };
     json j_object_t(object_value);
-    //json j_object_t(data_map);
-    //    char filename_json[256];
-    //sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
-    //    std::ofstream filejson(filename_json);
-    //    std::ofstream filejson("steane.json");
     std::ofstream filejson(output_json);
     filejson << j_object_t;
     filejson.close();
-    //    std::cout<<"saved simulation data to "<<filename_json<<std::endl;
 
-    std::cout<<"finish test_decode"<<std::endl;
+    std::cout<<"Finish simulation"<<std::endl;
     return 0;
 
 }
