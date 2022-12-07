@@ -3,10 +3,10 @@
 
 #SBATCH --job-name=generate_array
 #SBATCH --mail-type=ALL
-#SBATCH --ntasks=1
+#SBATCH --ntasks=2
 #SBATCH --cpus-per-task=16
 #SBATCH --time=06:00:00
-#SBATCH --array=5-30%3
+#SBATCH --array=5-10%1
 #SBATCH --partition=small
 #SBATCH --output=log/%x_%A_%a.log
 #SBATCH --nice=1000 #larger number with smaller priority
@@ -31,7 +31,8 @@ srun ./generate_css_code.out num_cores=$num_cores \
     code_folder="../data/CSS-Codes/run2/" \
     n_start="$((SLURM_ARRAY_TASK_ID))" \
     n_end="$((SLURM_ARRAY_TASK_ID+1))" \
-    num_trials="$((num_cores*10))"
+    num_trials="$((num_cores*10))" \
+    note="node-${SLURMD_NODENAME}-proc-${SLURM_PROCID}"
 
 date
 
