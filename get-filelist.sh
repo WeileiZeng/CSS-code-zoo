@@ -1,7 +1,7 @@
 # copy all json files to another folder. not in use any more
 date
 
-trial=run1
+trial=run2
 folder=../data/CSS-Codes/${trial}
 
 #ls ${folder} |wc -l
