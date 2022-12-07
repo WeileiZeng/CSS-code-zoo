@@ -7,7 +7,7 @@ using json=nlohmann::json;
 //using namespace common;
 
 //int generate_css_code();
-int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder);
+int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder, int num_trials);
 
 int main(int args, char ** argv){
   std::cout<<" --------------------- begin generating CSS codes"<<std::endl;
@@ -17,7 +17,8 @@ int main(int args, char ** argv){
   int num_cores=1; parser.get(num_cores,"num_cores");
   std::string code_folder="../data/CSS-Codes/tmp/";
   parser.get(code_folder,"code_folder");
-
+  int num_trials=num_cores*2;parser.get(num_cores,"num_cores");
+  int num_code_generated_total=0;
   //set up simulation
   for (int n=n_start;n<n_end;n++){
     for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
@@ -29,8 +30,7 @@ int main(int args, char ** argv){
 	std::time_t start_time = std::chrono::system_clock::to_time_t(start);
 	std::cout <<".-.-.-.-.-.-.-.-.-.-.-."
 		  << "start computation at " << std::ctime(&start_time)<<std::endl;
-
-	generate_css_code(n,Gx_row,Gz_row,num_cores,code_folder);
+	num_code_generated_total += generate_css_code(n,Gx_row,Gz_row,num_cores,code_folder,num_trials);
 	//When G_x_row or Gz_row is too small (like 1), error occurs, probably get zero matrix somewhere
 
 	auto end = std::chrono::system_clock::now();
@@ -40,25 +40,27 @@ int main(int args, char ** argv){
       }
     }
   }
-  
+  std::cout<<num_code_generated_total<<" codes generated this time for n_start = "<<n_start<<std::endl;
   std::cout<<" --------------------- finish generating CSS codes"<<std::endl;
   return 0;
 }
 
 /*parameters to set up:
-  num_cores,32
-  num_trials, 10000
-  how many instances to save for each parameter set, 3
+  @param num_cores,32
+  @param num_trials, 10000
+  @param how many instances to save for each parameter set, 3
   data folder, ../data/CSS-Codes/run1
+  @return num_code_generated
  */
-int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder){
+int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder, int num_trials){
   //int generate_css_code(){
   int seed = common::get_time(3)+100;//+seed;
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
+  int num_code_generated=0;
 
   //  int num_cores = 16; //32
-  int num_trials = num_cores * 10;
+  //  int num_trials = num_cores * 10;
   int dx_max=0, dz_max=0;
 #pragma omp parallel for schedule(guided) num_threads(num_cores)
   for ( int i =0; i < num_trials; i ++ ){
@@ -137,7 +139,8 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
 	std::ofstream filejson(filename_json);
 	filejson << j_object_t;
 	filejson.close();
-
+	
+	num_code_generated++;
 	std::cout<<"saved code to "<<filename_json<<std::endl;
 	break;
       }else{
@@ -148,8 +151,8 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
     
     }//pragma critical
   }// pragma parallel for
-
-  return 0;
+  
+  return num_code_generated;
 }
 
 
