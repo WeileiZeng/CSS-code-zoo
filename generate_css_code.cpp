@@ -19,6 +19,7 @@ int main(int args, char ** argv){
   parser.get(code_folder,"code_folder");
   int num_trials=num_cores*2;parser.get(num_cores,"num_cores");
   int num_code_generated_total=0;
+  std::string note="no note";parser.get(note,"note");
   //set up simulation
   for (int n=n_start;n<n_end;n++){
     for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
