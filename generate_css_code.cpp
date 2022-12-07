@@ -3,10 +3,20 @@
 using json=nlohmann::json;
 #include <chrono> //print computation time
 #include <ctime>  
-//#include <ctime> //to get current time
-//using namespace common;
 
-//int generate_css_code();
+
+/*generate random CSS code and save.
+ *@param n, number of qubits
+ *@param Gx_row, number of rows of Gx, not necessarily equal to rank
+ *@param Gz_row,
+ *@param num_cores, 32
+ *@param code_folder, folder to save the code
+ *@param num_trials, 10000
+  parameters to set up:
+  @param how many instances to save for each parameter set: 10
+  data folder, ../data/CSS-Codes/run1
+ *@return num_code_generated
+ */
 int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder, int num_trials);
 
 int main(int args, char ** argv){
@@ -46,32 +56,21 @@ int main(int args, char ** argv){
   return 0;
 }
 
-/*parameters to set up:
-  @param num_cores,32
-  @param num_trials, 10000
-  @param how many instances to save for each parameter set, 3
-  data folder, ../data/CSS-Codes/run1
-  @return num_code_generated
- */
+
 int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string code_folder, int num_trials){
-  //int generate_css_code(){
   int seed = common::get_time(3)+100;//+seed;
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
-  int num_code_generated=0;
-
-  //  int num_cores = 16; //32
-  //  int num_trials = num_cores * 10;
+  int num_code_generated=0; //counting
   int dx_max=0, dz_max=0;
 #pragma omp parallel for schedule(guided) num_threads(num_cores)
   for ( int i =0; i < num_trials; i ++ ){
-    //random CSS code
+    //generate random CSS code
     CSSCode codeR;
-    codeR.title="random code";
-    // good choice: 15,6,6;
-    codeR.n=n;//22;
-    codeR.Gx_row=Gx_row;//15;
-    codeR.Gz_row=Gz_row;//5;
+    codeR.title="Random code";
+    codeR.n=n;
+    codeR.Gx_row=Gx_row;
+    codeR.Gz_row=Gz_row;
 
     codeR.getGoodCode(0);//0 for disabling debug
     codeR.dist();
@@ -79,46 +78,25 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
 #pragma omp critical
     {
       //check if file exists. save the code if not
-    //set up filename
-      //    std::string title_str="../data/CSS-Codes/run2/";
-    int d =(codeR.dx < codeR.dz)? codeR.dx : codeR.dz ;
-    int Gx_row_rank = codeR.Gx.row_rank(), Gz_row_rank = codeR.Gz.row_rank();
-    codeR.k=codeR.n - Gx_row_rank - Gz_row_rank;
-    std::string filename_prefix=code_folder
-      +"n"+std::to_string(codeR.n)+"k"+std::to_string(codeR.k)+"d"+std::to_string(d)
-      +"-x"+std::to_string(Gx_row_rank)+"z"+std::to_string(Gz_row_rank)
-      +"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
+      //set up filename
+      int d =(codeR.dx < codeR.dz)? codeR.dx : codeR.dz ;
+      int Gx_row_rank = codeR.Gx.row_rank(), Gz_row_rank = codeR.Gz.row_rank();
+      codeR.k=codeR.n - Gx_row_rank - Gz_row_rank;
+      std::string filename_prefix=code_folder
+	+"n"+std::to_string(codeR.n)+"k"+std::to_string(codeR.k)+"d"+std::to_string(d)
+	+"-x"+std::to_string(Gx_row_rank)+"z"+std::to_string(Gz_row_rank)
+	+"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
 
-    FILE *f;
+      FILE *f;
     for (int j = 0; j<10; j++){//save 10 instances for the same parameter
-      //filename_prefix = filename_prefix + "-"+std::to_string(j);
       char filename_Gx[256],filename_Gz[256],filename_json[256];
       sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
       sprintf(filename_Gz,"%s-%iGz.mm",filename_prefix.c_str(),j);
       sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
 
-      //      std::string filename_Gx = filename_prefix + "-"+std::to_string(j) + "Gx.mm";
-      //std::string filename_json = filename_prefix + "-"+std::to_string(j) + ".json";
-      //      const char* filename = filename_Gx.c_str();
       const char* filename = filename_Gx;
-      //std::cout<<j<<std::endl;
       if ((f = fopen(filename, "r")) == NULL) {
 	//save the code if file doesn't exist yet
-
-	/*don't check here. break the parallel set up
-	//check 10 times before add the code
-	int d=codeR.d;
-	for (int i_check=0;i_check < 10; i_check ++){
-	  codeR.dist();
-	  if ( codeR.d < d){
-	    //discard the code
-	    std::cout<<"d="<<d<<", code.d="<<codeR.d<<std::endl;
-	    continue;
-	  }else{
-	    std::cout<<".";
-	  }
-	}
-	*/
 	GF2mat_to_MM(codeR.Gx,filename_Gx);
 	GF2mat_to_MM(codeR.Gz,filename_Gz);
 
@@ -142,7 +120,7 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
 	filejson.close();
 	
 	num_code_generated++;
-	std::cout<<"saved code to "<<filename_json<<std::endl;
+	std::cout<<"Saved code to "<<filename_json<<std::endl;
 	break;
       }else{
 	//std::cout<<"the file exist: "<<filename_prefix<<std::endl;
