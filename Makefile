@@ -86,7 +86,7 @@ dynamic:$(LIB_WEILEI_PATH)/libweilei.so
 
 
 run_verification:
-	./verification num_cores=16
+	srun -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16
 run_simulation:
 	./run_simulation.sh
 run_generate:
@@ -96,6 +96,9 @@ run_generate:
 #currently takes 1 minutes
 #./get-filelist.sh
 #./processing-codes.py
+run_table:
+	./get-filelist.sh
+	python3 processing-codes.py
 data-statistics:
 	du -sh data/
 	ls data/ |wc -l

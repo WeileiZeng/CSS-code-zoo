@@ -43,7 +43,7 @@ int main(int args, char ** argv){
     parser.get(filename_list,"filename_list");
     std::string code_folder="../data/CSS-Codes/run2/";
     parser.get(code_folder,"code_folder");
-    int num_cores=1; parser.get(num_cores,"num_cores");
+    int num_cores=4; parser.get(num_cores,"num_cores");
 
     //get number of codes
     const int code_total=count_lines(filename_list);
@@ -55,7 +55,13 @@ int main(int args, char ** argv){
       for ( int i=0; i<code_total; i++){
 	std::string jsonfile_name,code_name;
 #pragma omp critical
-	std::getline(file, jsonfile_name);
+	{
+	  if (code_count % 100 == 0) { 
+	    //printing on nodes are very slow
+	    printf("%i codes counted, %i mistakes.\n",code_count,code_mistake);
+	  }
+	  std::getline(file, jsonfile_name);
+	}
 	code_name = jsonfile_name.substr(0, jsonfile_name.size()-5);
 	//        printf("%s", line.c_str());
 	//	printf("%s", code_name.c_str());
@@ -68,11 +74,10 @@ int main(int args, char ** argv){
 	  //	   <<", code.d = " <<code.d<<std::endl;
 	}
 	//	break;
-	if (code_count % 100 == 0) 
-	  printf("%i codes counted, %i mistakes.\n",code_count,code_mistake);
-      }
+
+      }//pragma for
       file.close();
-    }
+    }//if
     std::cout<<code_count<<" codes checked, "
 	     <<code_mistake<<" mistakes found"<<std::endl;
     return 0;
