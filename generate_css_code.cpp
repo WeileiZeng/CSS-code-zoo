@@ -27,14 +27,15 @@ int main(int args, char ** argv){
   int num_cores=1; parser.get(num_cores,"num_cores");
   std::string code_folder="../data/CSS-Codes/tmp/";
   parser.get(code_folder,"code_folder");
-  int num_trials=num_cores*2;parser.get(num_cores,"num_cores");
+  int num_trials=num_cores*2;parser.get(num_trials,"num_trials");
   int num_code_generated_total=0;
   std::string note="no note";parser.get(note,"note");
   //set up simulation
   for (int n=n_start;n<n_end;n++){
     for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
       //	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<std::endl;
-      for ( int Gz_row = 2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
+      //      for ( int Gz_row = (n-Gx_row-3>2)?n-Gx_row-3:2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
+      for ( int Gz_row = 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
 	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<", Gz_row="<<Gz_row<<std::endl;
 
 	auto start = std::chrono::system_clock::now();
