@@ -73,13 +73,13 @@ bool reshape_decode(SubsystemProductCSSCode & spc, itpp::GF2mat & e_input){
 }
 
 //p_block[i] = code.simulate(p, e_try, num_cores, debug); 
-
-int simulate(double p){
+double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, int num_cores=1, int debug=1){
+  //int simulate(double p){
   //  spc.codeA;
   //  spc.codeB.Gx;
   /*take twos codes, say Steane codes. construt SPC, generate error e, then decode it.
    */
-
+  /*
   CSSCode codeA,codeB;
   codeA.n = 7; codeA.title="Steane 713 code"; codeA.get_713_code();
   codeB.n = 7; codeB.title="Steane 713 code"; codeB.get_713_code();
@@ -94,14 +94,14 @@ int simulate(double p){
   SubsystemProductCSSCode spc(codeA,codeB);
   spc.product();
   spc.n=spc.codeA.n*spc.codeB.n;
-
+  */
   //  std::cout<<spc.Gx<<std::endl;//size 98*49
 
 
-  const int e_try = 10000;
+  //const int e_try = 10000;
   int num_failure=0;
-  p=3.0/spc.n;
-  p =0.0635;
+  //  p=3.0/spc.n;
+  //  p =0.0635;
 
   for (int i_e=0; i_e<e_try; i_e ++){
     //set up random error
@@ -137,7 +137,7 @@ int simulate(double p){
 
   double p_block = 1.0*num_failure/e_try;
   std::cout<<"p = "<<p<<", p_block = "<<p_block<<std::endl;
-  return 0;
+  return p_block;
 }
 
 /** Decoding simulation for given CSS code using random window decoder
@@ -172,7 +172,7 @@ int main(int args, char ** argv){
 
     //initialize code
     CSSCode code,codeA,codeB;
-    SubsystemProductCSSCode spc(codeA,codeB);
+    SubsystemProductCSSCode spc;
 
     switch (mode){
     case 0://check mode. print information and quit
@@ -200,7 +200,9 @@ int main(int args, char ** argv){
       codeA.set_up_CxCz();
       codeB.set_up_CxCz();
       //  std::cout<<codeA.Cx<<std::endl;
-
+      //      SubsystemProductCSSCode spc_temp(codeA,codeB);
+      //      spc = spc_temp;
+      spc.codeA=codeA;spc.codeB=codeB;
       spc.product();
       spc.n=spc.codeA.n*spc.codeB.n;
       break;
@@ -231,7 +233,7 @@ int main(int args, char ** argv){
     //    const int e_try = 1000000;//1,000,000 for Steane codes
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
-      p_block[i] = code.simulate(p, e_try, num_cores, debug); 
+      p_block[i] = reshape_simulate(spc, p, e_try, num_cores, debug); 
       data_map[p_qubit[i]]=p_block[i];
       p /= 1.2;
     }
@@ -249,7 +251,7 @@ int main(int args, char ** argv){
     filejson << j_object_t;
     filejson.close();
 
-    std::cout<<"Finish simulation"<<std::endl;
+    std::cout<<"Finish reshape simulation"<<std::endl;
     return 0;
 
 }
