@@ -38,7 +38,25 @@ void syndrome_print(itpp::bvec syndrome, SubsystemProductCSSCode spc){
 
 }
 
-bool reshape_decode(SubsystemProductCSSCode & spc, itpp::GF2mat & e_input){
+/* Use reshape decoder to decode Z type error of spc
+ *@return decoding success or failure
+ *@param spc, Subsystem Product Code
+ *@param e_input, input error in GF2mat form, return decoded error
+ */
+bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat & e_input){
+  //  int d_decoder=(spc.codeA.dz+1)*(spc.codeB.dz+1)/2-1; //distance of the decoder
+  int w_decoder=(spc.codeA.dz+1)*(spc.codeB.dz+1)/4; //weight of smallest adversiral error; should set up dz first
+  //  std::cout<<weight(GF2mat_flat(e_input))<<","<< w_decoder<<".";
+  if (weight(GF2mat_flat(e_input)) < w_decoder){
+    //pass for small error
+    //    std::cout<<".";
+    itpp::GF2mat e_zero(e_input.rows(),e_input.cols());
+    e_input=e_zero;
+    return true;
+  }else{
+    //    std::cout<<"o";
+  }
+
 
   //decode by col, for code A
   itpp::GF2mat e_decoded(e_input);
@@ -68,7 +86,7 @@ bool reshape_decode(SubsystemProductCSSCode & spc, itpp::GF2mat & e_input){
   //  std::cout<<"e_vector: "<<e_vector<<std::endl;
   itpp::bvec syndrome = spc.Gx*e_vector;
   itpp::GF2mat s(syndrome);
-  return s.is_zero();
+  return s.is_zero(); //what if logical error?
   //  return false;
 }
 
@@ -103,6 +121,7 @@ double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, 
   //  p=3.0/spc.n;
   //  p =0.0635;
 
+#pragma omp parallel for schedule(guided) num_threads(num_cores)
   for (int i_e=0; i_e<e_try; i_e ++){
     //set up random error
     itpp::GF2mat e_input(spc.codeA.n,spc.codeB.n);
@@ -130,10 +149,11 @@ double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, 
     if (reshape_decode(spc, e_output)){
       //std::cout<<"get zero syndrome. decoding succeed"<<std::endl;
     }else{
+#pragma omp critical
       num_failure++;
     }
     //  std::cout<<"e_output"<<e_output<<std::endl;
-  }
+  }//pragma for
 
   double p_block = 1.0*num_failure/e_try;
   std::cout<<"p = "<<p<<", p_block = "<<p_block<<std::endl;
@@ -214,6 +234,8 @@ int main(int args, char ** argv){
       std::cout<<"Hint: choose mode in {0,1,2}; program exit"<<std::endl;
       return 0;
     }
+
+    spc.codeA.dist();    spc.codeB.dist();
 
     //code.dist();
     //code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
