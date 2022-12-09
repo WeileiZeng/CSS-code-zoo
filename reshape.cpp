@@ -38,10 +38,41 @@ void syndrome_print(itpp::bvec syndrome, SubsystemProductCSSCode spc){
 
 }
 
-bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat e){
+bool reshape_decode(SubsystemProductCSSCode & spc, itpp::GF2mat & e_input){
 
-  return false;
+  //decode by col, for code A
+  itpp::GF2mat e_decoded(e_input);
+  for ( int i =0 ; i<e_input.cols(); i++){
+    itpp::bvec e_col = e_input.get_col(i);
+    //std::cout<<e_col;
+    bool ans=spc.codeA.decode(e_col,100,0) ;
+    //std::cout<<e_col<<ans<<std::endl;
+    e_decoded.set_col(i,e_col);
+  }
+  e_input=e_input+e_decoded;
+  //std::cout<<"After decoding by col, code A, e_input"<<e_input<<std::endl;
+  //decode by row
+  for ( int i =0 ; i<e_input.rows(); i++){
+    itpp::bvec e_row = e_input.get_row(i);
+    //    std::cout<<e_row;
+    bool ans=spc.codeB.decode(e_row,100,0) ;
+    //    std::cout<<e_row<<ans<<std::endl;
+    e_decoded.set_row(i,e_row);
+  }
+  e_input=e_input+e_decoded;
+  //std::cout<<"After decoding by row, code B, e_input"<<e_input<<std::endl;
+
+  //how to return? get zero syndrome or not
+
+  itpp::bvec e_vector = GF2mat_flat(e_input);
+  //  std::cout<<"e_vector: "<<e_vector<<std::endl;
+  itpp::bvec syndrome = spc.Gx*e_vector;
+  itpp::GF2mat s(syndrome);
+  return s.is_zero();
+  //  return false;
 }
+
+//p_block[i] = code.simulate(p, e_try, num_cores, debug); 
 
 int simulate(double p){
   //  spc.codeA;
@@ -66,53 +97,46 @@ int simulate(double p){
 
   //  std::cout<<spc.Gx<<std::endl;//size 98*49
 
-  //set up random error
-  itpp::GF2mat e_input(spc.codeA.n,spc.codeB.n);
-  //each row corresponding to code A, each column corresponding to codes B. e_vector=[e_input.get_row(_) for _ in 0...codeB.n-1]
-  p=9.0/spc.n;
-  for ( int i=0; i<e_input.rows(); i++) 
-    for ( int j=0; j<e_input.cols(); j++) 
-      e_input.set(i,j,(itpp::randu()-p<0)? 1:0);
-  //  e_input.set(2,2,1);
 
-  std::cout<<"spc.codeA.Gx"<<spc.codeA.Gx
-	   <<"spc.codeB.Gx"<<spc.codeB.Gx<<std::endl;
+  const int e_try = 10000;
+  int num_failure=0;
+  p=3.0/spc.n;
+  p =0.0635;
+
+  for (int i_e=0; i_e<e_try; i_e ++){
+    //set up random error
+    itpp::GF2mat e_input(spc.codeA.n,spc.codeB.n);
+    //each row corresponding to code A, each column corresponding to codes B. e_vector=[e_input.get_row(_) for _ in 0...codeB.n-1]
+    for ( int i=0; i<e_input.rows(); i++) 
+      for ( int j=0; j<e_input.cols(); j++) 
+	e_input.set(i,j,(itpp::randu()-p<0)? 1:0);
+    //  e_input.set(2,2,1);
+
+  //  std::cout<<"spc.codeA.Gx"<<spc.codeA.Gx
+  //	   <<"spc.codeB.Gx"<<spc.codeB.Gx<<std::endl;
 
   //  common::GF2matPrint(e_input,"e_input");
-  std::cout<<"e_input"<<e_input<<std::endl;
+  // std::cout<<"e_input"<<e_input<<std::endl;
+
   //caluclate syndrome
-  itpp::bvec e_vector = GF2mat_flat(e_input);
+    //  itpp::bvec e_vector = GF2mat_flat(e_input);
   //  std::cout<<"e_vector: "<<e_vector<<std::endl;
-  itpp::bvec syndrome = spc.Gx*e_vector;
+    //  itpp::bvec syndrome = spc.Gx*e_vector;
   //  std::cout<<"syndrome: "<<syndrome<<std::endl;
   //  syndrome_print(syndrome, spc);
 
 
-  //decode by col, for code A
-  itpp::GF2mat e_decoded(e_input);
-  for ( int i =0 ; i<e_input.cols(); i++){
-    itpp::bvec e_col = e_input.get_col(i);
-    std::cout<<e_col;
-    bool ans=codeA.decode(e_col,100,0) ;
-    std::cout<<e_col<<ans<<std::endl;
-    e_decoded.set_col(i,e_col);
+    itpp::GF2mat e_output(e_input);
+    if (reshape_decode(spc, e_output)){
+      //std::cout<<"get zero syndrome. decoding succeed"<<std::endl;
+    }else{
+      num_failure++;
+    }
+    //  std::cout<<"e_output"<<e_output<<std::endl;
   }
-  e_input=e_input+e_decoded;
-  std::cout<<"After decoding by col, code A, e_input"<<e_input<<std::endl;
-  //decode by row
-  for ( int i =0 ; i<e_input.rows(); i++){
-    itpp::bvec e_row = e_input.get_row(i);
-    std::cout<<e_row;
-    bool ans=codeB.decode(e_row,100,0) ;
-    std::cout<<e_row<<ans<<std::endl;
-    e_decoded.set_row(i,e_row);
-  }
-  e_input=e_input+e_decoded;
-  std::cout<<"After decoding by row, code B, e_input"<<e_input<<std::endl;
 
-
-
-    //    std::cout<<e_col<<std::endl;
+  double p_block = 1.0*num_failure/e_try;
+  std::cout<<"p = "<<p<<", p_block = "<<p_block<<std::endl;
   return 0;
 }
 
@@ -129,10 +153,10 @@ int simulate(double p){
 int main(int args, char ** argv){
   
   itpp::RNG_randomize();
-  simulate(0.1);
-  return 0;
+  //  simulate(0.1);
+  //  return 0;
   
-    std::cout<<"============begin simulation========="<<std::endl;
+    std::cout<<"============begin reshape simulation========="<<std::endl;
     //parse parameter
     itpp::Parser parser;parser.init(args,argv);
     //    parser.set_silentmode(true);
@@ -141,12 +165,15 @@ int main(int args, char ** argv){
     int debug=1; parser.get(debug,"debug");//default debug on
     std::string output_json ="tmp.json"; parser.get(output_json,"output");
     int e_try=100; parser.get(e_try,"e_try");
-    std::string code_prefix="NA";
-    parser.get(code_prefix,"code_prefix");
+    std::string codeA_prefix="NA",codeB_prefix="NA",code_prefix="NA";
+    parser.get(codeA_prefix,"codeA_prefix");
+    parser.get(codeB_prefix,"codeB_prefix");
     int mode = 3; parser.get(mode,"mode");
 
     //initialize code
-    CSSCode code;
+    CSSCode code,codeA,codeB;
+    SubsystemProductCSSCode spc(codeA,codeB);
+
     switch (mode){
     case 0://check mode. print information and quit
       std::cout<<"Printing code info:"<<std::endl;
@@ -160,9 +187,22 @@ int main(int args, char ** argv){
       return 0;
       break;
     case 1: //Steane code      
-      code.n = 7;
+      /*      code.n = 7;
       code.title="Steane 713 code";
-      code.get_713_code();
+      code.get_713_code();*/
+      //  CSSCode codeA,codeB;
+      codeA.n = 7; codeA.title="Steane 713 code"; codeA.get_713_code();
+      codeB.n = 7; codeB.title="Steane 713 code"; codeB.get_713_code();
+      codeA.Gx=common::make_it_full_rank(codeA.Gx);
+      codeB.Gx=common::make_it_full_rank(codeB.Gx);
+      codeA.Gz=common::make_it_full_rank(codeA.Gz);
+      codeB.Gz=common::make_it_full_rank(codeB.Gz);
+      codeA.set_up_CxCz();
+      codeB.set_up_CxCz();
+      //  std::cout<<codeA.Cx<<std::endl;
+
+      spc.product();
+      spc.n=spc.codeA.n*spc.codeB.n;
       break;
     case 2://from file
       code.load(code_prefix);
@@ -173,13 +213,13 @@ int main(int args, char ** argv){
       return 0;
     }
 
-    code.dist();
-    code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
-    std::cout<<code<<std::endl;
+    //code.dist();
+    //code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
+    //std::cout<<code<<std::endl;
     std::cout<<"Finish generating code"<<std::endl;
 
-    code.Gx = common::make_it_full_rank(code.Gx);
-    code.Gz = common::make_it_full_rank(code.Gz);
+    //code.Gx = common::make_it_full_rank(code.Gx);
+    //code.Gz = common::make_it_full_rank(code.Gz);
     
     if (debug) std::cout<<"before simulate()"<<std::endl;
 
