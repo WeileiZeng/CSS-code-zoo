@@ -47,12 +47,11 @@ int main(int args, char ** argv){
 
 	auto end = std::chrono::system_clock::now();
 	std::chrono::duration<double> elapsed_seconds = end-start;
-	std::cout << "elapsed time: " << elapsed_seconds.count() << "s"
-		  << std::endl;
+	std::cout << "Elapsed time: " << elapsed_seconds.count() << "s" << std::endl;
       }
     }
   }
-  std::cout<<num_code_generated_total<<" codes generated this time for n_start = "<<n_start<<std::endl;
+  std::cout<<num_code_generated_total<<" codes generated this time for n_start = "<<n_start<<", n_end = "<<n_end<<std::endl;
   std::cout<<" --------------------- finish generating CSS codes"<<std::endl;
   return 0;
 }
@@ -62,8 +61,8 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
   int seed = common::get_time(3)+100;//+seed;
   itpp::RNG_reset(seed);
   itpp::RNG_randomize();
-  int num_code_generated=0; //counting
-  int dx_max=0, dz_max=0;
+  int num_code_generated=0; //counting number of codes generated during this run, and print it in the end.
+  //  int dx_max=0, dz_max=0;
 #pragma omp parallel for schedule(guided) num_threads(num_cores)
   for ( int i =0; i < num_trials; i ++ ){
     //generate random CSS code
@@ -79,7 +78,7 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
 #pragma omp critical
     {
       //check if file exists. save the code if not
-      //set up filename
+      //set up filename with necessary parameters
       int d =(codeR.dx < codeR.dz)? codeR.dx : codeR.dz ;
       int Gx_row_rank = codeR.Gx.row_rank(), Gz_row_rank = codeR.Gz.row_rank();
       codeR.k=codeR.n - Gx_row_rank - Gz_row_rank;
@@ -89,44 +88,44 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
 	+"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
 
       FILE *f;
-    for (int j = 0; j<10; j++){//save 10 instances for the same parameter
-      char filename_Gx[256],filename_Gz[256],filename_json[256];
-      sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
-      sprintf(filename_Gz,"%s-%iGz.mm",filename_prefix.c_str(),j);
-      sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
+      for (int j = 0; j<10; j++){//save 10 instances for the same parameter
+	char filename_Gx[256],filename_Gz[256],filename_json[256];
+	sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
+	sprintf(filename_Gz,"%s-%iGz.mm",filename_prefix.c_str(),j);
+	sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
 
-      const char* filename = filename_Gx;
-      if ((f = fopen(filename, "r")) == NULL) {
-	//save the code if file doesn't exist yet
-	GF2mat_to_MM(codeR.Gx,filename_Gx);
-	GF2mat_to_MM(codeR.Gz,filename_Gz);
+	const char* filename = filename_Gx;
+	if ((f = fopen(filename, "r")) == NULL) {
+	  //save the code if file doesn't exist yet
+	  GF2mat_to_MM(codeR.Gx,filename_Gx);
+	  GF2mat_to_MM(codeR.Gz,filename_Gz);
 
-	//save parameters into json file
-	json::object_t object_value = {
-	  {"n",codeR.n},
-	  {"k",codeR.k},
-	  {"d",d},
-	  {"Gx_row",Gx_row_rank},
-	  {"Gz_row",Gz_row_rank},
-	  {"dx",codeR.dx},
-	  {"dz",codeR.dz},
-	  {"index",j},
-	  {"filename_Gx",filename_Gx},
-	  {"filename_Gz",filename_Gz},
-	};
-	json j_object_t(object_value);
-	//	std::cout<<j_object_t<<std::endl;
-	std::ofstream filejson(filename_json);
-	filejson << j_object_t;
-	filejson.close();
+	  //save parameters into json file
+	  json::object_t object_value = {
+	    {"n",codeR.n},
+	    {"k",codeR.k},
+	    {"d",d},
+	    {"Gx_row",Gx_row_rank},
+	    {"Gz_row",Gz_row_rank},
+	    {"dx",codeR.dx},
+	    {"dz",codeR.dz},
+	    {"index",j},
+	    {"filename_Gx",filename_Gx},
+	    {"filename_Gz",filename_Gz},
+	  };
+	  json j_object_t(object_value);
+	  //	std::cout<<j_object_t<<std::endl;
+	  std::ofstream filejson(filename_json);
+	  filejson << j_object_t;
+	  filejson.close();
 	
-	num_code_generated++;
-	std::cout<<"Saved code to "<<filename_json<<std::endl;
-	break;
-      }else{
-	//std::cout<<"the file exist: "<<filename_prefix<<std::endl;
-	fclose(f);
-      }
+	  num_code_generated++;
+	  std::cout<<"Saved code to "<<filename_json<<std::endl;
+	  break;
+	}else{
+	  //std::cout<<"the file exist: "<<filename_prefix<<std::endl;
+	  fclose(f);
+	}
     }//for j
     
     }//pragma critical
