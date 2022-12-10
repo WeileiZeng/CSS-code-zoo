@@ -4,8 +4,10 @@ using json=nlohmann::json;
 #include <chrono> //print computation time
 #include <ctime>  
 
-
-//code_prefix=code_folder+code_name
+/* Find the code according to the filename, calculate distance and check if it matched value saved in json file
+ *@param code_prefix, code_prefix=code_folder+code_name
+ *@return bool, true if match, otherwise false.
+ */
 bool verify(std::string code_prefix){
 	CSSCode code;
 	code.load(code_prefix);
@@ -20,6 +22,8 @@ bool verify(std::string code_prefix){
 
 }
 
+/* Counting number of lines in a file. same as `wc -l filename`
+ */
 int count_lines(std::string filename){
   int code_total = 0;
   std::string line;
@@ -32,8 +36,11 @@ int count_lines(std::string filename){
   return code_total;
 }
 
-/** Verify data in CSS code zoo.
+/** Verify data in CSS code zoo. Calculate the distance and make sure it matches the value saved in json file. Final result will be printed.
  *@param debug
+ *@param filename_list, the text file save filenames corresponding to the codes.
+ *@param code_folder, the folder save json file and matriices of the codes.
+ *@param num_cores, number of cores used in openmp.
  */
 int main(int args, char ** argv){
     std::cout<<"============begin verification========="<<std::endl;
@@ -57,7 +64,7 @@ int main(int args, char ** argv){
 	std::string jsonfile_name,code_name;
 #pragma omp critical
 	{
-	  if (code_count % 100 == 0) { 
+	  if (code_count % 1000 == 0) { 
 	    //printing on nodes are very slow
 	    printf("%i codes counted, %i mistakes.\n",code_count,code_mistake);
 	  }
