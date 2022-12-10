@@ -3,29 +3,26 @@
 using json=nlohmann::json;
 #include <chrono> //print computation time
 #include <ctime>  
-//#include <ctime> //to get current time
-//using namespace common;
 
-//return a long vector consisting of rows of G
+/*@param G, error vector in MAtrix form corresponding to the lattice
+ *@return flat_G, a vector consisting of rows of G
+ */
 itpp::bvec GF2mat_flat(itpp::GF2mat G){
   itpp::GF2mat flat_G(G.get_row(0), false);//false for row
-  //  std::cout<<"G"<<G<<std::endl;
   for ( int i=1 ; i<G.rows();i++){
-    //    std::cout<<"i="<<i<<","<<flat_G<<std::endl;
     flat_G=flat_G.concatenate_horizontal(itpp::GF2mat(G.get_row(i),false));
-    //    std::cout<<"i="<<i<<","<<flat_G<<std::endl;
   }
-  //  std::cout<<flat_G<<std::endl;
   return flat_G.bvecify();				    
 }
 
+/* print syndrome of SPC as two matrices correesponding to code A by col and code B by row, respectively
+ *@param syndrome, binary syndrome vector corresponding to G*e^T
+ *@param spc, the code to give dimension of the code
+ */
 void syndrome_print(itpp::bvec syndrome, SubsystemProductCSSCode spc){
   itpp::GF2mat syndrome_A(spc.codeA.Gx.rows(),spc.codeB.n),
     syndrome_B(spc.codeA.n,spc.codeB.Gx.rows());
-  //  std::cout<<"syndrome_A:"<<syndrome_A<<std::endl;
   for ( int i=0; i<spc.codeA.Gx.rows(); i++ ){
-    //    itpp::bvec b = syndrome[1,3];
-    //    std::cout<<"row" <<syndrome(i*spc.codeB.n,(i+1)*spc.codeB.n-1) <<std::endl;
     syndrome_A.set_row(i,syndrome(i*spc.codeB.n,(i+1)*spc.codeB.n-1));
   }
   std::cout<<"syndrome_A:"<<syndrome_A<<std::endl;
@@ -35,7 +32,7 @@ void syndrome_print(itpp::bvec syndrome, SubsystemProductCSSCode spc){
     syndrome_B.set_row(i,syndrome(sizeA+i*spc.codeB.Gx.rows(), sizeA+(i+1)*spc.codeB.Gx.rows()-1));
   }
   std::cout<<"syndrome_B:"<<syndrome_B<<std::endl;
-
+  return;
 }
 
 /* Use reshape decoder to decode Z type error of spc
@@ -46,25 +43,18 @@ void syndrome_print(itpp::bvec syndrome, SubsystemProductCSSCode spc){
 bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat & e_input){
   //  int d_decoder=(spc.codeA.dz+1)*(spc.codeB.dz+1)/2-1; //distance of the decoder
   int w_decoder=(spc.codeA.dz+1)*(spc.codeB.dz+1)/4; //weight of smallest adversiral error; should set up dz first
-  //  std::cout<<weight(GF2mat_flat(e_input))<<","<< w_decoder<<".";
   if (weight(GF2mat_flat(e_input)) < w_decoder){
     //pass for small error
-    //    std::cout<<".";
     itpp::GF2mat e_zero(e_input.rows(),e_input.cols());
     e_input=e_zero;
     return true;
-  }else{
-    //    std::cout<<"o";
   }
-
 
   //decode by col, for code A
   itpp::GF2mat e_decoded(e_input);
   for ( int i =0 ; i<e_input.cols(); i++){
     itpp::bvec e_col = e_input.get_col(i);
-    //std::cout<<e_col;
     bool ans=spc.codeA.decode(e_col,100,0) ;
-    //std::cout<<e_col<<ans<<std::endl;
     e_decoded.set_col(i,e_col);
   }
   e_input=e_input+e_decoded;
@@ -206,25 +196,17 @@ int main(int args, char ** argv){
       std::cout<<"Finish checking code; exit the program; no simulation has been ran."<<std::endl;
       return 0;
       break;
-    case 1: //Steane code      
-      /*      code.n = 7;
-      code.title="Steane 713 code";
-      code.get_713_code();*/
-      //  CSSCode codeA,codeB;
+    case 1: //Product of two Steane codes      
       codeA.n = 7; codeA.title="Steane 713 code"; codeA.get_713_code();
       codeB.n = 7; codeB.title="Steane 713 code"; codeB.get_713_code();
       codeA.Gx=common::make_it_full_rank(codeA.Gx);
       codeB.Gx=common::make_it_full_rank(codeB.Gx);
       codeA.Gz=common::make_it_full_rank(codeA.Gz);
       codeB.Gz=common::make_it_full_rank(codeB.Gz);
-      codeA.set_up_CxCz();
-      codeB.set_up_CxCz();
-      //  std::cout<<codeA.Cx<<std::endl;
-      //      SubsystemProductCSSCode spc_temp(codeA,codeB);
-      //      spc = spc_temp;
+      codeA.set_up_CxCz(); codeB.set_up_CxCz();
+
       spc.codeA=codeA;spc.codeB=codeB;
       spc.product();
-      spc.n=spc.codeA.n*spc.codeB.n;
       break;
     case 2://from file
       code.load(code_prefix);
@@ -236,10 +218,7 @@ int main(int args, char ** argv){
     }
 
     spc.codeA.dist();    spc.codeB.dist();
-
-    //code.dist();
-    //code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
-    //std::cout<<code<<std::endl;
+    spc.n=spc.codeA.n*spc.codeB.n;
     std::cout<<"Finish generating code"<<std::endl;
 
     //code.Gx = common::make_it_full_rank(code.Gx);
@@ -249,10 +228,8 @@ int main(int args, char ** argv){
 
     const int num_data=13;
     double p_qubit[num_data], p_block[num_data];
-    //    double p = 0.001;
-    double p = 0.1;
-    std::map<double,double> data_map;
-    //    const int e_try = 1000000;//1,000,000 for Steane codes
+    double p = 0.1; 
+    std::map<double,double> data_map;//[{p_qubit,p_block}]
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
       p_block[i] = reshape_simulate(spc, p, e_try, num_cores, debug); 
@@ -275,6 +252,5 @@ int main(int args, char ** argv){
 
     std::cout<<"Finish reshape simulation"<<std::endl;
     return 0;
-
 }
 
