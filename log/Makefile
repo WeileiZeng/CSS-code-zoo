@@ -1,5 +1,6 @@
 clean:
 	mv generate*.log trash
+#	mv generate*.log generate*.err trash
 show-codes:
 	bash show-codes.sh
 show-save:
