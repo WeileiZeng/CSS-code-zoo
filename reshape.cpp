@@ -175,19 +175,19 @@ int main(int args, char ** argv){
     int debug=1; parser.get(debug,"debug");//default debug on
     std::string output_json ="tmp.json"; parser.get(output_json,"output");
     int e_try=100; parser.get(e_try,"e_try");
-    std::string codeA_prefix="NA",codeB_prefix="NA",code_prefix="NA";
+    std::string codeA_prefix="NA",codeB_prefix="NA";//,code_prefix="NA";
     parser.get(codeA_prefix,"codeA_prefix");
     parser.get(codeB_prefix,"codeB_prefix");
     int mode = 3; parser.get(mode,"mode");
 
     //initialize code
-    CSSCode code,codeA,codeB;
+    CSSCode codeA,codeB,code;
     SubsystemProductCSSCode spc;
 
     switch (mode){
     case 0://check mode. print information and quit
       std::cout<<"Printing code info:"<<std::endl;
-      code.load(code_prefix);
+      //      code.load(code_prefix);
       code.title=note;
       code.dist();
       code.k = code.n - code.Gx.row_rank() - code.Gz.row_rank();
@@ -199,28 +199,32 @@ int main(int args, char ** argv){
     case 1: //Product of two Steane codes      
       codeA.n = 7; codeA.title="Steane 713 code"; codeA.get_713_code();
       codeB.n = 7; codeB.title="Steane 713 code"; codeB.get_713_code();
-      codeA.Gx=common::make_it_full_rank(codeA.Gx);
-      codeB.Gx=common::make_it_full_rank(codeB.Gx);
-      codeA.Gz=common::make_it_full_rank(codeA.Gz);
-      codeB.Gz=common::make_it_full_rank(codeB.Gz);
-      codeA.set_up_CxCz(); codeB.set_up_CxCz();
-
-      spc.codeA=codeA;spc.codeB=codeB;
-      spc.product();
       break;
     case 2://from file
-      code.load(code_prefix);
-      code.title=note;
+      codeA.load(codeA_prefix);
+      codeB.load(codeB_prefix);
+      codeA.title=codeA_prefix;
+      codeB.title=codeB_prefix;
       break;
     default:
       std::cout<<"Hint: choose mode in {0,1,2}; program exit"<<std::endl;
       return 0;
     }
 
+    codeA.n=codeA.Gx.cols(); codeB.n=codeB.Gx.cols();
+    codeA.Gx=common::make_it_full_rank(codeA.Gx);
+    codeB.Gx=common::make_it_full_rank(codeB.Gx);
+    codeA.Gz=common::make_it_full_rank(codeA.Gz);
+    codeB.Gz=common::make_it_full_rank(codeB.Gz);
+    codeA.set_up_CxCz(); codeB.set_up_CxCz();
     spc.codeA.dist();    spc.codeB.dist();
-    spc.n=spc.codeA.n*spc.codeB.n;
-    std::cout<<"Finish generating code"<<std::endl;
 
+    spc.codeA=codeA;spc.codeB=codeB;
+    spc.product();
+    spc.n=spc.codeA.n*spc.codeB.n;
+    std::cout<<"Finish generating A,B & SPC codes"<<std::endl;
+
+    //only do this if using code.dist()
     //code.Gx = common::make_it_full_rank(code.Gx);
     //code.Gz = common::make_it_full_rank(code.Gz);
     
@@ -240,7 +244,9 @@ int main(int args, char ** argv){
     json::object_t object_value={
       {"data_map",data_map},
       {"note",note},
-      {"title",code_prefix},
+      {"title","NA"},
+      {"codeA_prefix",codeA_prefix},
+      {"codeB_prefix",codeB_prefix},
       {"e_try",e_try},
       {"num_cores",num_cores},
       {"num_data",num_data},
