@@ -69,7 +69,7 @@ int main(int args, char ** argv){
     
     if (debug) std::cout<<"before simulate()"<<std::endl;
 
-    const int num_data=13;
+    const int num_data=7;
     double p_qubit[num_data], p_block[num_data];
     //    double p = 0.001;
     double p = 0.1;
@@ -79,7 +79,7 @@ int main(int args, char ** argv){
       p_qubit[i] = p;
       p_block[i] = code.simulate(p, e_try, num_cores, debug); 
       data_map[p_qubit[i]]=p_block[i];
-      p /= 1.2;
+      p /= 1.4;
     }
     
     json::object_t object_value={
