@@ -172,8 +172,9 @@ int main(int args, char ** argv){
     //    parser.set_silentmode(true);
     int num_cores=1; parser.get(num_cores,"num_cores");
     std::string note="no-note"; parser.get(note,"note");
+    std::string title="no-title"; parser.get(title,"title");
     int debug=1; parser.get(debug,"debug");//default debug on
-    std::string output_json ="tmp.json"; parser.get(output_json,"output");
+    std::string output_json ="tmp.json"; parser.get(output_json,"output"); //output json file to save results
     int e_try=100; parser.get(e_try,"e_try");
     std::string codeA_prefix="NA",codeB_prefix="NA";//,code_prefix="NA";
     parser.get(codeA_prefix,"codeA_prefix");
@@ -244,7 +245,7 @@ int main(int args, char ** argv){
     json::object_t object_value={
       {"data_map",data_map},
       {"note",note},
-      {"title","NA"},
+      {"title",title},
       {"codeA_prefix",codeA_prefix},
       {"codeB_prefix",codeB_prefix},
       {"e_try",e_try},
