@@ -1,7 +1,7 @@
 make simulation
 
 # run case by case
-case 23 in 
+case 33 in 
 # check k=1
     13)
 	code=n13k1d3-x6z6dx3dz3-9	
@@ -27,6 +27,15 @@ case 23 in
     25)
 	code=n27k2d5-x13z12dx5dz5-0
 	;;
+    33)
+	code=n11k3d3-x4z4dx3dz3-0
+	;;
+    34)
+	code=n19k3d4-x9z7dx4dz4-0
+	;;
+    35)
+	code=n29k3d5-x13z13dx5dz5-0
+	;;
 esac
 
 
@@ -45,7 +54,7 @@ srun --time=6:00:00 -p small -n 1 --cpus-per-task=16 \
     ./simulation.out \
     note=${code} \
     code_prefix=../data/CSS-Codes/run2/${code} \
-    output=result/${output}.json \
+    output=result/unchecked/${output}.json \
     num_cores=16 \
     e_try=100000 \
     debug=0 \
