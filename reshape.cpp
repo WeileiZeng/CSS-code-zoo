@@ -108,11 +108,15 @@ double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, 
 
   //const int e_try = 10000;
   int num_failure=0;
+  int num_decode = 0;
+  const int num_failure_max=e_try/100;
+  std::cout<<"num_failure_max="<<num_failure_max<<std::endl;
   //  p=3.0/spc.n;
   //  p =0.0635;
 
 #pragma omp parallel for schedule(guided) num_threads(num_cores)
   for (int i_e=0; i_e<e_try; i_e ++){
+    if (num_failure >= num_failure_max) continue;
     //set up random error
     itpp::GF2mat e_input(spc.codeA.n,spc.codeB.n);
     //each row corresponding to code A, each column corresponding to codes B. e_vector=[e_input.get_row(_) for _ in 0...codeB.n-1]
@@ -136,17 +140,24 @@ double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, 
 
 
     itpp::GF2mat e_output(e_input);
-    if (reshape_decode(spc, e_output)){
-      //std::cout<<"get zero syndrome. decoding succeed"<<std::endl;
-    }else{
+    bool decoding_result=reshape_decode(spc, e_output);
 #pragma omp critical
+    {
+      num_decode++;
+      if (decoding_result){
+    //std::cout<<"get zero syndrome. decoding succeed"<<std::endl;
+  }else{
       num_failure++;
-    }
+  }
+  }//pragma critical
+
     //  std::cout<<"e_output"<<e_output<<std::endl;
   }//pragma for
 
-  double p_block = 1.0*num_failure/e_try;
-  std::cout<<"p = "<<p<<", p_block = "<<p_block<<std::endl;
+    //  double p_block = 1.0*num_failure/e_try;
+  double p_block = 1.0*num_failure/num_decode;
+  std::cout<<"p = "<<p<<", p_block = "<<p_block
+	   <<", num_decode="<<num_decode<<std::endl;
   return p_block;
 }
 
