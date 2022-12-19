@@ -6,15 +6,23 @@ folder=../data/CSS-Codes/${trial}
 
 #ls ${folder} |wc -l
 echo start generating json file list for folder ${folder}
+echo "currently only counting file with index 0, *-0.json"
 echo this may take ~1 minute
+
 
 #find ${folder} -name "*json" | cut -c 24- > filelist-${trial}.txt 
 #reduce file amount to 1/10
+
 find ${folder} -name "*-0.json" | cut -c 24- > filelist-${trial}.txt 
 
 echo "number of files: `wc -l filelist-${trial}.txt`" 
-
 date
+
+echo "full list"
+find ${folder} -name "*.json" | cut -c 24- > filelist-${trial}-full.txt 
+echo "number of files: `wc -l filelist-${trial}-full.txt`" 
+date
+
 echo finish
 
 
