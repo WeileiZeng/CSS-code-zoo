@@ -82,17 +82,26 @@ int generate_css_code(int n, int Gx_row, int Gz_row, int num_cores, std::string 
       int d =(codeR.dx < codeR.dz)? codeR.dx : codeR.dz ;
       int Gx_row_rank = codeR.Gx.row_rank(), Gz_row_rank = codeR.Gz.row_rank();
       codeR.k=codeR.n - Gx_row_rank - Gz_row_rank;
-      std::string filename_prefix=code_folder
+      //add folder
+      std::string filename_prefix=
+	+"n"+std::to_string(codeR.n)+"/k"+std::to_string(codeR.k)+"/"
 	+"n"+std::to_string(codeR.n)+"k"+std::to_string(codeR.k)+"d"+std::to_string(d)
 	+"-x"+std::to_string(Gx_row_rank)+"z"+std::to_string(Gz_row_rank)
 	+"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
-
+      /*      std::string filename_prefix=code_folder
+	+"n"+std::to_string(codeR.n)+"k"+std::to_string(codeR.k)+"d"+std::to_string(d)
+	+"-x"+std::to_string(Gx_row_rank)+"z"+std::to_string(Gz_row_rank)
+	+"dx"+std::to_string(codeR.dx)+"dz"+std::to_string(codeR.dz);
+      */
       FILE *f;
       for (int j = 0; j<10; j++){//save 10 instances for the same parameter
 	char filename_Gx[256],filename_Gz[256],filename_json[256];
-	sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
+	/*sprintf(filename_Gx,"%s-%iGx.mm",filename_prefix.c_str(),j);
 	sprintf(filename_Gz,"%s-%iGz.mm",filename_prefix.c_str(),j);
-	sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);
+	sprintf(filename_json,"%s-%i.json",filename_prefix.c_str(),j);*/
+	sprintf(filename_Gx,"%s/i%i/%s-%iGx.mm",code_folder.c_str(),j,filename_prefix.c_str(),j);
+	sprintf(filename_Gz,"%s/i%i/%s-%iGz.mm",code_folder.c_str(),j,filename_prefix.c_str(),j);
+	sprintf(filename_json,"%s/i%i/%s-%i.json",code_folder.c_str(),j,filename_prefix.c_str(),j);
 
 	const char* filename = filename_Gx;
 	if ((f = fopen(filename, "r")) == NULL) {
