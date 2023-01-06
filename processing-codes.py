@@ -124,11 +124,24 @@ def main():
             # os.system('mv '+ data_folder+'/'+ line[:-1]+' ' +data_folder+'/'+ line[:-6]+'Gx.mm '+data_folder+'/'+ line[:-6]+'Gz.mm ' +trash_folder)
             # print(line+' moved to trash')
 
-    print('Completeness table, .=9')
+    #count percantage. compare to the case with all index 10/0
+    total=0
+    actual=0
+    for n in range(5,31):
+        for k in range(1,n-3):
+            i=max_distance_table_index[n][k] #0 for complete, 1-9 for incomplete
+            total+=10
+            if i > 0:
+                actual+=i
+            else:
+                actual+=10
+    percentage=1.0*actual/total
+    print('Completeness table, ("0" omitted), percentage = {}'.format(percentage))
     string = pretty_2D_list(max_distance_table_index)    
     with open(log_file,'a') as f:
-        f.write(filename_list)
-        f.write(str(datetime.datetime.now()))
+        f.write(filename_list+", ")
+        f.write(str(datetime.datetime.now())+"\n")
+        f.write('Completeness table, ("0" omitted), percentage = {}\n'.format(percentage))
         f.write(string)
 
     print('[n,k,d] table')
@@ -136,7 +149,7 @@ def main():
     print(["total number of codes:", num_of_codes])
     print(datetime.datetime.now())
     with open(log_file,'a') as f:
-        f.write("total number of codes: {}".format(num_of_codes))
+        f.write("total number of codes: {}\n".format(num_of_codes))
         f.write(string)
 
 
