@@ -125,18 +125,21 @@ def main():
             # print(line+' moved to trash')
 
     #count percantage. compare to the case with all index 10/0
-    total=0
-    actual=0
+    total, actual = 0, 0  #add up indexes
+    entry_count, entry_total = 0, 0 #add up entries. 10/0 for completed, otherwise not    
     for n in range(5,31):
         for k in range(1,n-3):
             i=max_distance_table_index[n][k] #0 for complete, 1-9 for incomplete
             total+=10
+            entry_total += 1
             if i > 0:
                 actual+=i
-            else:
+            else: #entry completed with 10 instances, denoted as 0
                 actual+=10
+                entry_count += 1 
     percentage=1.0*actual/total
-    print('Completeness table, ("0" omitted), percentage = {}'.format(percentage))
+    entry_percentage = 1.0 * entry_count / entry_total
+    print('Completeness table, ("0" omitted), percentage = {}, entry_percentage = {}/{} = {}'.format(percentage, entry_count, entry_total, entry_percentage))
     string = pretty_2D_list(max_distance_table_index)    
     with open(log_file,'a') as f:
         f.write(filename_list+", ")
