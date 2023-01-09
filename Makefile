@@ -35,7 +35,7 @@ lib:
 %.out:%.o $(object_files)
 	$(CXX) $(ITPP) -o $@ $< $(object_files)
 
-cmd=make lib && make $@.o && make $@.out #&& ./$@.out
+cmd=make lib && make $@.o && make $@.out # && ./$@.out
 # eg: make test.o && make lib && make test.out
 product:
 	$(cmd)
@@ -48,6 +48,8 @@ generate_css_code:
 simulation:
 	$(cmd)
 verification:
+	$(cmd)
+reshape:
 	$(cmd)
 #if it keep running. clean and rebuild weilei_lib
 #because I install it locally, i need to inform where the itpp lib is located
@@ -85,11 +87,13 @@ dynamic:$(LIB_WEILEI_PATH)/libweilei.so
 	./test_dynamic.out
 
 
-run_verification:
+run-verification:
 	srun -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16
-run_simulation:
+run-verification-full:
+	srun -p small -n 1 --cpus-per-task=16 --time=6:00:00 ./verification.out num_cores=16 filename_list=filelist-run2-full.txt
+run-simulation:
 	./run_simulation.sh
-run_generate:
+run-generate:
 	sbatch sbatch_generate.sh
 
 #steps to collect code date
@@ -115,3 +119,4 @@ show-table:
 #Visiting http://<hostname>:4000/?token=<token> in a browser loads JupyterLab.
 jupyter:
 	docker run -it --rm --user 1011 --group-add users -p 4000:8888 -v "${PWD}":/home/jovyan/work jupyter/datascience-notebook:85f615d5cafa 
+# sacctmgr list qos format==name,priority,preempt
