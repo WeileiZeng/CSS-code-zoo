@@ -52,10 +52,10 @@ int main(int args, char ** argv){
     parser.get(code_folder,"code_folder");
     int num_cores=4; parser.get(num_cores,"num_cores");
 
-    //get number of codes
+    //get number of codes in advance to set up parallel for
     const int code_total=count_lines(filename_list);
     std::cout<<"Number of codes: "<<code_total<<std::endl;
-    std::cout<<"No printing on srun due to slow network"<<std::endl;
+    //std::cout<<"No printing on srun due to slow network"<<std::endl; //fixed by setting srun --unbuffered
     int code_count=0,code_mistake=0;
     std::ifstream file(filename_list);
     if (file.is_open()) {
@@ -64,16 +64,16 @@ int main(int args, char ** argv){
 	std::string jsonfile_name,code_name;
 #pragma omp critical
 	{
+	  code_count++;
 	  if (code_count % 1000 == 0) { 
 	    //printing on nodes are very slow
-	    printf("%i codes counted, %i mistakes.\n",code_count,code_mistake);
+	    printf("%i/%i codes counted, %i mistakes.\n",code_count,code_total, code_mistake);
 	  }
 	  std::getline(file, jsonfile_name);
 	}
 	code_name = jsonfile_name.substr(0, jsonfile_name.size()-5);
 	//        printf("%s", line.c_str());
 	//	printf("%s", code_name.c_str());
-	code_count++;
 	if (verify(code_folder+code_name)){
 	  //	  std::cout<<"equal"<<std::endl;
 	}else{
