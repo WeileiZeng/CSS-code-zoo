@@ -88,9 +88,10 @@ dynamic:$(LIB_WEILEI_PATH)/libweilei.so
 
 
 run-verification:
-	srun -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16
+	srun --unbuffered -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16 code_folder="" filename_list=filelist-run3.txt
 run-verification-full:
-	srun -p small -n 1 --cpus-per-task=16 --time=6:00:00 ./verification.out num_cores=16 filename_list=filelist-run2-full.txt
+	srun --unbuffered -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16 code_folder="" filename_list=filelist-run3-full.txt
+#	srun -p small -n 1 --cpus-per-task=16 --time=6:00:00 ./verification.out num_cores=16 filename_list=filelist-run2-full.txt
 run-simulation:
 	./run_simulation.sh
 run-generate:
