@@ -11,8 +11,10 @@ class Database():
         pass
     def create(self,folder):
         #os.system skip errors just like bash
+        print('set up database folder '+folder)
         os.system("mkdir "+folder)
         for i in range(10):#index
+            print('mkdir i'+str(i))
             os.system("mkdir "+folder+"/i"+str(i))
             for n in range(4,31):
                 os.system("mkdir "+folder+"/i"+str(i)+"/n"+str(n))
@@ -44,7 +46,7 @@ def pretty_2D_list(table):
     n=0
     string = ''
     for row in table[n:]:
-        print('    n='+str(n)+':\t'+dot_row(row))
+#        print('    n='+str(n)+':\t'+dot_row(row))
         string += 'n='+str(n)+':\t'+dot_row(row) +'\n'
         n+=1
     return string
@@ -73,7 +75,7 @@ def main():
 #    data_folder = '../data/CSS-Codes/run2'
     trash_folder = '../data/CSS-Codes/trash'
 #    filename_list = '../data/CSS-Codes/filelist-run1.txt'
-    filename_list = 'filelist-run3.txt'  #./get-filelist.sh
+    filename_list = 'filelist-run4.txt'  #./get-filelist.sh
     log_file = 'run.log'
 
 #    print('data_folder:\t'+data_folder)
@@ -139,20 +141,22 @@ def main():
                 entry_count += 1 
     percentage=1.0*actual/total
     entry_percentage = 1.0 * entry_count / entry_total
-    print('Completeness table, ("0" omitted), percentage = {}, entry_percentage = {}/{} = {}'.format(percentage, entry_count, entry_total, entry_percentage))
-    string = pretty_2D_list(max_distance_table_index)    
+
+    string = filename_list+", " \
+    + str(datetime.datetime.now())+"\n" \
+    + 'Completeness table, ("0" omitted), percentage = {}/{} = {:.2f}%, entry_percentage = {}/{} = {:.2f}%\n'.format(actual, total, percentage*100, entry_count, entry_total, entry_percentage*100) \
+    + pretty_2D_list(max_distance_table_index)    
+
+    print(string)
     with open(log_file,'a') as f:
-        f.write(filename_list+", ")
-        f.write(str(datetime.datetime.now())+"\n")
-        f.write('Completeness table, ("0" omitted), percentage = {}\n'.format(percentage))
         f.write(string)
 
-    print('[n,k,d] table')
-    string = pretty_2D_list(max_distance_table)
-    print(["total number of codes:", num_of_codes])
-    print(datetime.datetime.now())
+    string = ('[n,k,d] table\n') \
+    + pretty_2D_list(max_distance_table) \
+    + "total number of codes: {}\n".format(num_of_codes) \
+    + str(datetime.datetime.now())
+    print(string)
     with open(log_file,'a') as f:
-        f.write("total number of codes: {}\n".format(num_of_codes))
         f.write(string)
 
 
@@ -167,12 +171,12 @@ def json_test():
 
 def database_test():
     db=Database()
-    data_folder = '../data/CSS-Codes/run3'
+    data_folder = '../data/CSS-Codes/run4'
     db.create(data_folder)
     #takes 30 seconds to finish
 
 
-#test()
+#database_test()
 #recover()
 main()
 
