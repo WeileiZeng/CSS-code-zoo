@@ -61,13 +61,15 @@ def num_decoding_failures_via_physical_frame_changes(H, logicals, p, num_trials)
             num_errors += 1
     return num_errors
 """
-"""
+
 # not in use after reorgnize Pool
-def decode(p,H,matching,logicals):
+def decode(p,H,logicals):
+#def decode(p,H,matching,logicals):
 #def decode(_):
-        matching = Matching.from_check_matrix(H, weights=np.log((1-p)/p), faults_matrix=logicals)
-        print('p={}'.format(p))
-        noise = np.random.binomial(1, p, H.shape[1])
+#        matching = Matching.from_check_matrix(H, weights=np.log((1-p)/p), faults_matrix=logicals)
+#        print('p={}'.format(p))
+#        noise = np.random.binomial(1, p, H.shape[1])
+        noise = rng.binomial(1, p, H.shape[1])
         syndrome = H@noise % 2
         predicted_logicals_flipped = matching.decode(syndrome)
         actual_logicals_flipped = logicals@noise % 2
@@ -75,7 +77,7 @@ def decode(p,H,matching,logicals):
             return 1 #error
         return 0 #good
 #            num_errors += 1
-"""
+
 
 import itertools
 import math
@@ -112,10 +114,87 @@ def init(H,p,logicals):#to initialize Pool
     global matching
     matching = Matching.from_check_matrix(H, weights=np.log((1-p)/p), faults_matrix=logicals) #no need to put it here but anyway
 
+import  multiprocessing
 from multiprocessing import Pool
+class Worker():
+    def __init__(self, workers, initializer, initargs):
+        self.num_errors_total=0
+        self.num_trials_total=0
+        self.num_errors_min=2
+        print('initilize pool with {} workers'.format(workers))
+        self.pool = Pool(processes=workers, 
+                         initializer=initializer, 
+                         initargs=initargs)
+        print("pool._processes = {}, multiprocessing.cpu_count() = {}".format(self.pool._processes,multiprocessing.cpu_count()))
+
+
+#    def callback(self, result):
+#        if result:
+#            print("Solution found! Yay!")
+#            self.pool.terminate()
+
+    def callback(self,result):#result could be 1 for error or 0 nonerror
+        if result:
+            self.num_errors_total += 1
+        self.num_trials_total += 1
+        if (self.num_errors_total > self.num_errors_min):
+            print('close when num_errors_min')
+            self.pool.terminate() #or terminate()
+
+#    while (num_trials_actual < num_trials or num_errors < num_errors_min) and num_trials_actual < num_trials_max:        
+
+
+    def do_job(self,num_trials,p,H,logicals):
+        for i in range(num_trials):
+            try:
+                self.pool.apply_async(decode, args=(p,H,logicals), callback=self.callback)
+            except:
+                print("break at i = ",i)
+                break
+#        for args in product(seed_str, repeat=4):
+#            self.pool.apply_async(part_crack_helper, 
+#                                  args=args, 
+#                                  callback=self.callback)
+
+        self.pool.close()
+        self.pool.join()
+        print('total ',self.num_errors_total)
+        print('total ',self.num_trials_total)
+        print("good bye")
+
+
+
+
+
+
+
+
+
+
 def parallel_num_decoding_failures(H, logicals, p, num_trials, num_errors_min, pool_size):
     num_trials_list = [ int(1+num_trials/pool_size) for _ in range(pool_size)]
     num_trials_list[-1] = int( num_trials - (num_trials/pool_size+1)*(pool_size-1) )
+
+
+    w = Worker(1, init, (H,p,logicals))
+#    w = Worker(num_proc, init, [total_count])
+    w.do_job(num_trials,p,H,logicals)
+    exit()
+
+
+    with Pool(processes=pool_size, initializer=init, initargs=(H,p,logicals)) as pool:
+#        result_list = pool.starmap(num_decoding_failures,
+#                                       [(H, logicals, p, num_trials_list[_], int(num_errors_min/pool_size)) for _ in range(pool_size)])
+
+        for i in range(num_trials):
+            pool.apply_async(decode, 
+                                  args=(p,H,logicals), 
+                                  callback=callback)
+
+#def decode(p,H,matching,logicals):
+
+
+#########3
 
     with Pool(processes=pool_size, initializer=init, initargs=(H,p,logicals)) as pool:
         result_list = pool.starmap(num_decoding_failures,
