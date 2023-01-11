@@ -17,11 +17,11 @@ def toc(tempBool=True):
     tempTimeInterval = next(TicToc)
     if tempBool:
         if tempTimeInterval > 1800: # more than half hour 30*60=1800
-            print( "Elapsed time: %.2f hours.\n" %(tempTimeInterval/3600.0) )
+            print( "Elapsed time: %.2f hours." %(tempTimeInterval/3600.0) )
         elif tempTimeInterval > 300: # more than 5 mins
-            print( "Elapsed time: %.2f mins.\n" %(tempTimeInterval/60.0) )
+            print( "Elapsed time: %.2f mins." %(tempTimeInterval/60.0) )
         else:
-            print( "Elapsed time: %.2f seconds.\n" %tempTimeInterval )
+            print( "Elapsed time: %.2f seconds." %tempTimeInterval )
 
 def tic():
     # Records a time in TicToc, marks the beginning of a time interval
