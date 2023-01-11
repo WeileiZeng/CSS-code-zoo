@@ -6,6 +6,8 @@ from pymatching import Matching
 
 NUM_TRIALS_MAX = 1e7 #limit max time per thread, 46 seconds for 1e6
 NUM_TRIALS=30000
+POOL_SIZE = 5
+NUM_ERRORS_MIN=2
 
 def repetition_code(n):
     """
@@ -120,12 +122,12 @@ class Worker():
     def __init__(self, workers, initializer, initargs):
         self.num_errors_total=0
         self.num_trials_total=0
-        self.num_errors_min=2
-        print('initilize pool with {} workers'.format(workers))
+        self.num_errors_min=NUM_ERRORS_MIN
+#        print('initilize pool with {} workers'.format(workers))
         self.pool = Pool(processes=workers, 
                          initializer=initializer, 
                          initargs=initargs)
-        print("pool._processes = {}, multiprocessing.cpu_count() = {}".format(self.pool._processes,multiprocessing.cpu_count()))
+#        print("pool._processes = {}, multiprocessing.cpu_count() = {}".format(self.pool._processes,multiprocessing.cpu_count()))
 
 
 #    def callback(self, result):
@@ -138,18 +140,17 @@ class Worker():
             self.num_errors_total += 1
         self.num_trials_total += 1
         if (self.num_errors_total > self.num_errors_min):
-            print('close when num_errors_min')
+ #           print('close when num_errors_min')
             self.pool.terminate() #or terminate()
 
 #    while (num_trials_actual < num_trials or num_errors < num_errors_min) and num_trials_actual < num_trials_max:        
-
 
     def do_job(self,num_trials,p,H,logicals):
         for i in range(num_trials):
             try:
                 self.pool.apply_async(decode, args=(p,H,logicals), callback=self.callback)
             except:
-                print("break at i = ",i)
+#                print("break at i = ",i)
                 break
 #        for args in product(seed_str, repeat=4):
 #            self.pool.apply_async(part_crack_helper, 
@@ -158,9 +159,9 @@ class Worker():
 
         self.pool.close()
         self.pool.join()
-        print('total ',self.num_errors_total)
-        print('total ',self.num_trials_total)
-        print("good bye")
+#        print('total ',self.num_errors_total)
+#        print('total ',self.num_trials_total)
+#        print("good bye")
 
 
 
@@ -176,9 +177,15 @@ def parallel_num_decoding_failures(H, logicals, p, num_trials, num_errors_min, p
     num_trials_list[-1] = int( num_trials - (num_trials/pool_size+1)*(pool_size-1) )
 
 
-    w = Worker(1, init, (H,p,logicals))
+    w = Worker(POOL_SIZE, init, (H,p,logicals))
 #    w = Worker(num_proc, init, [total_count])
     w.do_job(num_trials,p,H,logicals)
+
+    print('w.num_errors_total={}, w.num_trials_total={}'.format(w.num_errors_total,w.num_trials_total))
+#    print('total ',w.num_trials_total)
+    log_error = w.num_errors_total/w.num_trials_total
+    return log_error
+
     exit()
 
 
@@ -254,11 +261,14 @@ print(log_errors_all_L)
 #dictionary={L:{'p_qubit':ps.tolist(),'p_block':logical_errors.tolist()} for L, logical_errors in zip(Ls, log_errors_all_L)}
 dictionary={L:{'p_qubit':ps,'p_block':logical_errors} for L, logical_errors in zip(Ls, log_errors_all_L)}
 
+
+#exit() #no file writing
+
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
 #print(json_object)
 filename="toric-{}-{}.json".format(num_trials,NUM_TRIALS_MAX) 
-#filename='tmp.json'
+filename='tmp.json'
 with open(filename, "w") as outfile:
     outfile.write(json_object)
 
