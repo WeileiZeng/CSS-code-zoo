@@ -7,6 +7,8 @@ from pymatching import Matching
 NUM_TRIALS_MAX = 1e7 #limit max time per thread, 46 seconds for 1e6
 NUM_TRIALS=30000
 
+
+
 def repetition_code(n):
     """
     Parity check matrix of a repetition code with length n.
@@ -114,12 +116,13 @@ def init(H,p,logicals):#to initialize Pool
 
 from multiprocessing import Pool
 def parallel_num_decoding_failures(H, logicals, p, num_trials, num_errors_min, pool_size):
-    num_trials_list = [ int(1+num_trials/pool_size) for _ in range(pool_size)]
-    num_trials_list[-1] = int( num_trials - (num_trials/pool_size+1)*(pool_size-1) )
+#    num_trials_list = [ int(1+num_trials/pool_size) for _ in range(pool_size)]
+#    num_trials_list[-1] = int( num_trials - (num_trials/pool_size+1)*(pool_size-1) )
+    num_trials_per_worker=num_trials/pool_size
 
     with Pool(processes=pool_size, initializer=init, initargs=(H,p,logicals)) as pool:
         result_list = pool.starmap(num_decoding_failures,
-                                       [(H, logicals, p, num_trials_list[_], int(num_errors_min/pool_size)) for _ in range(pool_size)])
+                                       [(H, logicals, p, num_trials_per_worker, int(num_errors_min/pool_size)) for _ in range(pool_size)])
     num_errors_total=0
     num_trials_total=0
     for num_errors, num_trials_actual in result_list:
@@ -131,11 +134,36 @@ def parallel_num_decoding_failures(H, logicals, p, num_trials, num_errors_min, p
 
 import TicToc
 
+def get_pre_result(L:int):
+    result_filename="toric-trials100000-errors100.json"
+    result = json.load(open(result_filename,'r'))
+    log_errors=result[str(L)]["p_block"]
+#    print(result[str(L)]["p_block"])
+    return log_errors
+
+def get_num_trials(L:int,num_errors_min:int, num_trials_max:int):
+    log_errors_estimate = get_pre_result(L)
+    num_trials_list=[]
+    p_min = num_errors_min/num_trials_max
+    for p in log_errors_estimate:
+        if p < p_min:
+            num_trials=num_trials_max
+        else:
+            num_trials = int(num_errors_min/p)
+        num_trials_list.append(num_trials)
+    return num_trials_list
+
+
 def simulate(L:int):
     print("Simulating L={}...".format(L))
     Hx = toric_code_x_stabilisers(L)
     logX = toric_code_x_logicals(L)
     log_errors = []
+    log_errors_estimate = get_pre_result(L)
+    num_trials_list = get_num_trials(L,num_errors_min, num_trials_max=int(1e5))
+    print(num_trials_list)
+    exit()
+
     TicToc.tic()
     for p in ps:
         log_error = parallel_num_decoding_failures(Hx, logX, p, num_trials, num_errors_min, pool_size)
