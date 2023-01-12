@@ -6,7 +6,7 @@ from pymatching import Matching
 import TicToc
 #import  multiprocessing
 from multiprocessing import Pool
-
+import datetime
 
 import argparse
 
@@ -25,8 +25,26 @@ print(args)
 NUM_TRIALS=args.num_trials
 NUM_ERRORS_MAX=args.num_errors_max
 POOL_SIZE = args.pool_size
+filename="toric-trials{}-errors{}.json".format(NUM_TRIALS,NUM_ERRORS_MAX) 
+filename='tmp.json'
 
-#exit()
+Ls = range(9,21,1) #change from 8 to 9
+#Ls = range(8,21,1) #change from 8 to 9
+print("Ls=",Ls)
+#ps = np.linspace(0.01, 0.2, 9)
+#ps = np.linspace(0.03, 0.15, 5)
+#use ps same as SPC simulation in C++ code
+ps=[0.1,
+ 0.07142857142857144,
+ 0.051020408163265314,
+ 0.036443148688046656,
+ 0.0260308204914619,
+ 0.018593443208187073,
+ 0.013281030862990767,
+ 0.009486450616421976]
+print("ps=",ps)
+
+
 
 
 ################  parameters #################
@@ -35,7 +53,7 @@ POOL_SIZE = args.pool_size
 #NUM_ERRORS_MAX=100
 #POOL_SIZE = 16-5-1
 
-print(" NUM_TRIALS={}, NUM_ERRORS_MAX={}, POOL_SIZE={}, ".format(NUM_TRIALS, NUM_ERRORS_MAX, POOL_SIZE))
+print(" NUM_TRIALS={}, NUM_ERRORS_MAX={}, POOL_SIZE={}, filename={}".format(NUM_TRIALS, NUM_ERRORS_MAX, POOL_SIZE,filename))
 
 def repetition_code(n):
     """
@@ -119,7 +137,8 @@ class Worker():
         self.num_errors_max=NUM_ERRORS_MAX
         self.pool = Pool(processes=workers, #POOL_SIZE
                          initializer=initializer, 
-                         initargs=initargs)
+                         initargs=initargs,
+                         maxtasksperchild=16)
 
     def callback(self,is_error): #is_error could be 1 or 0
         if is_error:
@@ -131,12 +150,20 @@ class Worker():
 #    while (num_trials_actual < num_trials or num_errors < num_errors_min) and num_trials_actual < num_trials_max:        
 
     def do_job(self,num_trials,p,H,logicals):
+        _flag=100
         for i in range(num_trials):
             try:
+#                if len(self.pool._cache) > 1e2:
+#                    print("waiting for cache to clear...")
+#                    last.wait()
+                if i % _flag == 0 : 
+                    _flag = _flag*10
+                    print(i,end=',')
                 self.pool.apply_async(decode, args=(p,H,logicals), callback=self.callback)
             except:#ValueException('Pool closed')
+                print('exit when i = ',i)
                 break
-
+        print('Finish adding jobs')
         self.pool.close()
         self.pool.join()
 
@@ -164,26 +191,15 @@ def simulate(L:int):
     return log_errors
 
 
-Ls = range(9,21,2) #change from 8 to 9
-#Ls = range(8,21,1) #change from 8 to 9
-#ps = np.linspace(0.01, 0.2, 9)
-#ps = np.linspace(0.03, 0.15, 5)
-#use ps same as SPC simulation in C++ code
-ps=[0.1,
- 0.07142857142857144,
- 0.051020408163265314,
- 0.036443148688046656,
- 0.0260308204914619,
- 0.018593443208187073,
- 0.013281030862990767,
- 0.009486450616421976]
-print("ps=",ps)
+
+
 
 #seed=int(np.random.default_rng().random()*1e8)
 #np.random.seed(seed) # seed=2
 log_errors_all_L = []
 
 for L in Ls:
+    print(datetime.datetime.now())
     log_errors_all_L.append(simulate(L))
 print(log_errors_all_L)
 
@@ -197,8 +213,6 @@ dictionary={L:{'p_qubit':ps,'p_block':logical_errors} for L, logical_errors in z
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
 # print(json_object)
-filename="toric-trials{}-errors{}.json".format(NUM_TRIALS,NUM_ERRORS_MAX) 
-#filename='tmp.json'
 with open(filename, "w") as outfile:
     outfile.write(json_object)
 
