@@ -3,59 +3,9 @@ import numpy as np
 from scipy.sparse import hstack, kron, eye, csr_matrix, block_diag
 import json
 from pymatching import Matching
-import TicToc
-#import  multiprocessing
-from multiprocessing import Pool
-import datetime #datetime.datetime.now()
-import time  #time.sleep()
 
-
-import argparse
-
-parser = argparse.ArgumentParser(
-                    prog = 'toric',
-                    description = 'Threshold simulation for toric codes with various size LxL. Author: Weilei Zeng',
-                    epilog = 'Package Used: PyMatching')
-
-parser.add_argument('--num_trials', default=1000, type=int, help="max number of trials for each (p_qubit,p_logical,L) data point")
-parser.add_argument('--num_errors_max', default=10, type=int,help="max number of errors accumulated for single data point to avoid over running")
-parser.add_argument('--pool_size', default=2, type=int, help="number of workers to work in parallel")
-
-args = parser.parse_args()
-print(args)
-#print(args.filename, args.count, args.verbose)
-NUM_TRIALS=args.num_trials
-NUM_ERRORS_MAX=args.num_errors_max
-POOL_SIZE = args.pool_size
-filename="toric-trials{}-errors{}.json".format(NUM_TRIALS,NUM_ERRORS_MAX) 
-filename='tmp.json'
-
-Ls = range(9,21,1) #change from 8 to 9
-#Ls = range(8,21,1) #change from 8 to 9
-print("Ls=",Ls)
-#ps = np.linspace(0.01, 0.2, 9)
-#ps = np.linspace(0.03, 0.15, 5)
-#use ps same as SPC simulation in C++ code
-ps=[0.1,
- 0.07142857142857144,
- 0.051020408163265314,
- 0.036443148688046656,
- 0.0260308204914619,
- 0.018593443208187073,
- 0.013281030862990767,
- 0.009486450616421976]
-print("ps=",ps)
-
-
-
-
-################  parameters #################
-#NUM_TRIALS_MAX = 1e7 #limit max time per thread, 46 seconds for 1e6
-#NUM_TRIALS=int(1e7) #3000
-#NUM_ERRORS_MAX=100
-#POOL_SIZE = 16-5-1
-
-print(" NUM_TRIALS={}, NUM_ERRORS_MAX={}, POOL_SIZE={}, filename={}".format(NUM_TRIALS, NUM_ERRORS_MAX, POOL_SIZE,filename))
+NUM_TRIALS_MAX = 1e7 #limit max time per thread, 46 seconds for 1e6
+NUM_TRIALS=30000
 
 def repetition_code(n):
     """
@@ -111,73 +61,75 @@ def num_decoding_failures_via_physical_frame_changes(H, logicals, p, num_trials)
             num_errors += 1
     return num_errors
 """
-
-def decode(p,H,logicals):
-#        matching = Matching.from_check_matrix(H, weights=np.log((1-p)/p), faults_matrix=logicals) #moved to init
-        noise = rng.binomial(1, p, H.shape[1])
+"""
+# not in use after reorgnize Pool
+def decode(p,H,matching,logicals):
+#def decode(_):
+        matching = Matching.from_check_matrix(H, weights=np.log((1-p)/p), faults_matrix=logicals)
+        print('p={}'.format(p))
+        noise = np.random.binomial(1, p, H.shape[1])
         syndrome = H@noise % 2
         predicted_logicals_flipped = matching.decode(syndrome)
         actual_logicals_flipped = logicals@noise % 2
         if not np.array_equal(predicted_logicals_flipped, actual_logicals_flipped):
             return 1 #error
         return 0 #good
+#            num_errors += 1
+"""
 
+import itertools
+import math
+def num_decoding_failures(H, logicals, p, num_trials, num_errors_min):
+    L=int(math.sqrt(H.shape[1]/2)) # size as well as distance
+    t=int(L/2) #good errors with weight < t
+    num_errors = 0
+    num_trials_actual=0
+    num_trials_max = NUM_TRIALS_MAX #limit max time per thread, 46 seconds for 1e6
+    while (num_trials_actual < num_trials or num_errors < num_errors_min) and num_trials_actual < num_trials_max:
+        num_trials_actual += 1
+#    for i in range(num_trials):
+        noise = rng.binomial(1, p, H.shape[1]) #rng from init()
+#        noise = np.random.binomial(1, p, H.shape[1])
+        noise_weight=0 #count weight for preprocessing
+        for bit in noise:
+            if bit == 1:
+                noise_weight += 1
+        if noise_weight < t: # pass for good errors
+            continue
+        syndrome = H@noise % 2
+        predicted_logicals_flipped = matching.decode(syndrome)
+        actual_logicals_flipped = logicals@noise % 2
+        if not np.array_equal(predicted_logicals_flipped, actual_logicals_flipped):
+            num_errors += 1
 
-#import itertools
-#import math
+#    print('num_errors_min={}, num_errors={}, num_trails_actual={}'.format( num_errors_min, num_errors, num_trials_actual))
+    return num_errors, num_trials_actual
+
 
 def init(H,p,logicals):#to initialize Pool
     global rng
     rng = np.random.default_rng()
     global matching
-    matching = Matching.from_check_matrix(H, weights=np.log((1-p)/p), faults_matrix=logicals) 
+    matching = Matching.from_check_matrix(H, weights=np.log((1-p)/p), faults_matrix=logicals) #no need to put it here but anyway
 
-class Worker():
-    def __init__(self, workers, initializer, initargs):
-        self.num_errors_total=0 #accumulated error
-        self.num_trials_total=0 #actual trials being simualted
-        self.num_errors_max=NUM_ERRORS_MAX
-        self.pool = Pool(processes=workers, #POOL_SIZE
-                         initializer=initializer, 
-                         initargs=initargs)
-#,
-#                         maxtasksperchild=16)
+from multiprocessing import Pool
+def parallel_num_decoding_failures(H, logicals, p, num_trials, num_errors_min, pool_size):
+    num_trials_list = [ int(1+num_trials/pool_size) for _ in range(pool_size)]
+    num_trials_list[-1] = int( num_trials - (num_trials/pool_size+1)*(pool_size-1) )
 
-    def callback(self,is_error): #is_error could be 1 or 0
-        if is_error:
-            self.num_errors_total += 1
-        self.num_trials_total += 1
-        if (self.num_errors_total >= self.num_errors_max):
-            self.pool.terminate() 
-
-#    while (num_trials_actual < num_trials or num_errors < num_errors_min) and num_trials_actual < num_trials_max:        
-
-    def do_job(self,num_trials,p,H,logicals):
-        _flag=100
-        for i in range(num_trials):
-            try:
-                while len(self.pool._cache) > 1e5:
-#                    print("waiting for cache to clear...")
-                    time.sleep(1)
-                if i % _flag == 0 : 
-                    _flag = _flag*10
-                    print(i,end=',')
-                self.pool.apply_async(decode, args=(p,H,logicals), callback=self.callback)
-            except:#ValueException('Pool closed')
-                print('exit when i = ',i)
-                break
-        print('Finish adding jobs')
-        self.pool.close()
-        self.pool.join()
-
-
-def parallel_num_decoding_failures(H, logicals, p):
-#def parallel_num_decoding_failures(H, logicals, p, num_trials, num_errors_min, pool_size):
-    w = Worker(POOL_SIZE, init, (H,p,logicals))
-    w.do_job(NUM_TRIALS,p,H,logicals)
-    print('w.num_errors_total={}, w.num_trials_total={}'.format(w.num_errors_total,w.num_trials_total))
-    log_error = w.num_errors_total/w.num_trials_total
+    with Pool(processes=pool_size, initializer=init, initargs=(H,p,logicals)) as pool:
+        result_list = pool.starmap(num_decoding_failures,
+                                       [(H, logicals, p, num_trials_list[_], int(num_errors_min/pool_size)) for _ in range(pool_size)])
+    num_errors_total=0
+    num_trials_total=0
+    for num_errors, num_trials_actual in result_list:
+        num_errors_total += num_errors
+        num_trials_total += num_trials_actual
+#    return num_errors_total
+    log_error = num_errors_total/num_trials_total
     return log_error
+
+import TicToc
 
 def simulate(L:int):
     print("Simulating L={}...".format(L))
@@ -186,23 +138,36 @@ def simulate(L:int):
     log_errors = []
     TicToc.tic()
     for p in ps:
-        log_error = parallel_num_decoding_failures(Hx, logX, p)
+        log_error = parallel_num_decoding_failures(Hx, logX, p, num_trials, num_errors_min, pool_size)
         log_errors.append(log_error)
-        print('p={:f}, log_error={:f}={:.3e}'.format(p,log_error,log_error), end=', ')
+        print('p={:f}'.format(p),end=', ')
+        print('log_error={:f}={:.3e}'.format(log_error,log_error), end=', ')
         TicToc.toc()
     print("Finish simulating L={}...".format(L))
     return log_errors
 
+num_trials = NUM_TRIALS #30000 #3000000
+pool_size=15
+num_errors_min = pool_size*1
 
-
-
+Ls = range(9,21,2) #change from 8 to 9
+#ps = np.linspace(0.01, 0.2, 9)
+#ps = np.linspace(0.03, 0.15, 5)
+#use ps same as SPC simulation in C++ code
+ps=[0.1,
+ 0.07142857142857144,
+ 0.051020408163265314,
+ 0.036443148688046656,
+ 0.0260308204914619,
+ 0.018593443208187073,
+ 0.013281030862990767,
+ 0.009486450616421976]
 
 #seed=int(np.random.default_rng().random()*1e8)
 #np.random.seed(seed) # seed=2
 log_errors_all_L = []
 
 for L in Ls:
-    print(datetime.datetime.now())
     log_errors_all_L.append(simulate(L))
 print(log_errors_all_L)
 
@@ -210,12 +175,11 @@ print(log_errors_all_L)
 #dictionary={L:{'p_qubit':ps.tolist(),'p_block':logical_errors.tolist()} for L, logical_errors in zip(Ls, log_errors_all_L)}
 dictionary={L:{'p_qubit':ps,'p_block':logical_errors} for L, logical_errors in zip(Ls, log_errors_all_L)}
 
-
-#exit() #no file writing
-
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
-# print(json_object)
+#print(json_object)
+filename="toric-{}-{}.json".format(num_trials,NUM_TRIALS_MAX) 
+filename='tmp.json'
 with open(filename, "w") as outfile:
     outfile.write(json_object)
 
