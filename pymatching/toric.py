@@ -4,10 +4,8 @@ from scipy.sparse import hstack, kron, eye, csr_matrix, block_diag
 import json
 from pymatching import Matching
 import TicToc
-
 import itertools
 import math
-
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -26,7 +24,7 @@ NUM_TRIALS=args.num_trials
 NUM_ERRORS_MAX=args.num_errors_max
 POOL_SIZE = args.pool_size
 filename="toric-trials{}-errors{}.json".format(NUM_TRIALS,NUM_ERRORS_MAX)
-filename='tmp.json'
+#filename='tmp.json'
 
 Ls = range(9,21,1) #change from 8 to 9
 #Ls = range(8,21,1) #change from 8 to 9
@@ -117,7 +115,6 @@ def decode(p,H,matching,logicals):
 #            num_errors += 1
 """
 
-#def num_decoding_failures(H, logicals, p, num_trials, num_errors_min):
 def num_decoding_failures(H, logicals, p, num_trials):
     L=int(math.sqrt(H.shape[1]/2)) # size as well as distance
     t=int(L/2) #good errors with weight < t
@@ -141,7 +138,7 @@ def num_decoding_failures(H, logicals, p, num_trials):
     return num_errors
 
 
-def init(H,p,logicals):#to initialize Pool
+def pool_init(H,p,logicals):#to initialize Pool
     global rng
     rng = np.random.default_rng()
     global matching
@@ -152,7 +149,7 @@ def parallel_num_decoding_failures(H, logicals, p, num_trials, pool_size):
     num_jobs=pool_size*10 #to avoid very long job blocking the program
     num_trials_per_job=int(num_trials/num_jobs)
 
-    with Pool(processes=pool_size, initializer=init, initargs=(H,p,logicals)) as pool:
+    with Pool(processes=pool_size, initializer=pool_init, initargs=(H,p,logicals)) as pool:
         result_list = pool.starmap(
             num_decoding_failures,
             itertools.repeat(
@@ -218,7 +215,7 @@ def main():
 
     for L in Ls:
         log_errors_all_L.append(simulate(L))
-        print(log_errors_all_L)
+    print("log_errors_all_L:",log_errors_all_L)
 
     #save simulation result into json file
     #dictionary={L:{'p_qubit':ps.tolist(),'p_block':logical_errors.tolist()} for L, logical_errors in zip(Ls, log_errors_all_L)}
