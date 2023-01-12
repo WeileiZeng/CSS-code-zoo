@@ -21,7 +21,7 @@ parser.add_argument('--pool_size', default=2, type=int, help="number of workers 
 
 args = parser.parse_args()
 print(args)
-#print(args.filename, args.count, args.verbose)
+
 NUM_TRIALS=args.num_trials
 NUM_ERRORS_MAX=args.num_errors_max
 POOL_SIZE = args.pool_size
@@ -122,14 +122,8 @@ def num_decoding_failures(H, logicals, p, num_trials):
     L=int(math.sqrt(H.shape[1]/2)) # size as well as distance
     t=int(L/2) #good errors with weight < t
     num_errors = 0
-#    num_trials_actual=0
-#    num_trials_max = NUM_TRIALS_MAX #limit max time per thread, 46 seconds for 1e6
-#    while (num_trials_actual < num_trials or num_errors < num_errors_min) and num_trials_actual < num_trials_max:
     for i in range(num_trials):
-#        num_trials_actual += 1
-#    for i in range(num_trials):
         noise = rng.binomial(1, p, H.shape[1]) #rng from init()
-#        noise = np.random.binomial(1, p, H.shape[1])
         noise_weight=0 #count weight for preprocessing
         for bit in noise:
             if bit == 1:
@@ -144,7 +138,6 @@ def num_decoding_failures(H, logicals, p, num_trials):
             num_errors += 1
 
 #    print('num_errors_min={}, num_errors={}, num_trails_actual={}'.format( num_errors_min, num_errors, num_trials_actual))
-#    return num_errors, num_trials_actual
     return num_errors
 
 
@@ -156,24 +149,24 @@ def init(H,p,logicals):#to initialize Pool
 
 from multiprocessing import Pool
 def parallel_num_decoding_failures(H, logicals, p, num_trials, pool_size):
-#    num_trials_list = [ int(1+num_trials/pool_size) for _ in range(pool_size)]
-#    num_trials_list[-1] = int( num_trials - (num_trials/pool_size+1)*(pool_size-1) )
-    num_jobs=pool_size*10
+    num_jobs=pool_size*10 #to avoid very long job blocking the program
     num_trials_per_job=int(num_trials/num_jobs)
 
     with Pool(processes=pool_size, initializer=init, initargs=(H,p,logicals)) as pool:
-        result_list = pool.starmap(num_decoding_failures,
-                                   itertools.repeat((H, logicals, p, num_trials_per_job), num_jobs))
+        result_list = pool.starmap(
+            num_decoding_failures,
+            itertools.repeat(
+                (H, logicals, p, num_trials_per_job), 
+                num_jobs)
+        )
     num_errors_total=0
     num_trials_total=num_trials_per_job*num_jobs
     for num_errors in result_list:
         num_errors_total += num_errors
-#        num_trials_total += num_trials_actual
-#    return num_errors_total
     log_error = num_errors_total/num_trials_total
     return log_error
 
-
+#use pre results to estimate how many trials is needed for each data
 def get_pre_result(L:int):
     result_filename="toric-trials100000-errors100.json"
     result = json.load(open(result_filename,'r'))
@@ -186,9 +179,9 @@ def get_num_trials_list(L:int,num_errors_max:int, num_trials_max:int):
     num_trials_list=[]
     p_min = num_errors_max/num_trials_max
     for p in log_errors_estimate:
-        if p < p_min:
+        if p < p_min: #may not get a single error in this case
             num_trials=num_trials_max
-        else:
+        else:  #get approximately num_erros_max of errors
             num_trials = int(num_errors_max/p)
         if num_trials < 500: #num_of_trails_min 
             num_trials = 500
@@ -197,21 +190,19 @@ def get_num_trials_list(L:int,num_errors_max:int, num_trials_max:int):
 
 
 def simulate(L:int):
-    print("Simulating L={}...".format(L))
+    print("Simulating L={}...".format(L), end = ' ')
     Hx = toric_code_x_stabilisers(L)
     logX = toric_code_x_logicals(L)
     log_errors = []
     log_errors_estimate = get_pre_result(L)
 
-    num_trials_list = get_num_trials_list(L,num_errors_max=NUM_ERRORS_MAX, num_trials_max=int(1e5))
+    num_trials_list = get_num_trials_list(L,num_errors_max=NUM_ERRORS_MAX, num_trials_max=NUM_TRIALS)
     print("num_trials_list:",num_trials_list)
-#    exit()
 
     TicToc.tic()
     for i in range(len(ps)):
         p=ps[i]
         num_trials=num_trials_list[i]
-#    for p in ps:
         log_error = parallel_num_decoding_failures(Hx, logX, p, num_trials, pool_size=POOL_SIZE)
         log_errors.append(log_error)
         print('p={:f}'.format(p),end=', ')
@@ -220,30 +211,26 @@ def simulate(L:int):
     print("Finish simulating L={}...".format(L))
     return log_errors
 
-#num_trials = NUM_TRIALS #30000 #3000000
-#pool_size=15
-#num_errors_min = pool_size*1
 
 
+def main():
+    log_errors_all_L = []
 
-#seed=int(np.random.default_rng().random()*1e8)
-#np.random.seed(seed) # seed=2
-log_errors_all_L = []
+    for L in Ls:
+        log_errors_all_L.append(simulate(L))
+        print(log_errors_all_L)
 
-for L in Ls:
-    log_errors_all_L.append(simulate(L))
-print(log_errors_all_L)
+    #save simulation result into json file
+    #dictionary={L:{'p_qubit':ps.tolist(),'p_block':logical_errors.tolist()} for L, logical_errors in zip(Ls, log_errors_all_L)}
+    dictionary={L:{'p_qubit':ps,'p_block':logical_errors} for L, logical_errors in zip(Ls, log_errors_all_L)}
 
-#save simulation result into json file
-#dictionary={L:{'p_qubit':ps.tolist(),'p_block':logical_errors.tolist()} for L, logical_errors in zip(Ls, log_errors_all_L)}
-dictionary={L:{'p_qubit':ps,'p_block':logical_errors} for L, logical_errors in zip(Ls, log_errors_all_L)}
+    # Serializing json
+    json_object = json.dumps(dictionary, indent=4)
+    #print(json_object)
+    with open(filename, "w") as outfile:
+        outfile.write(json_object)
 
-# Serializing json
-json_object = json.dumps(dictionary, indent=4)
-#print(json_object)
-#filename="toric-{}-{}.json".format(num_trials,NUM_TRIALS_MAX) 
-#filename='tmp.json'
-with open(filename, "w") as outfile:
-    outfile.write(json_object)
+    print("data saved to {}".format(filename))
 
-print("data saved to {}".format(filename))
+
+main()
