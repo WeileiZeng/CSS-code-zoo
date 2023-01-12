@@ -6,7 +6,9 @@ from pymatching import Matching
 import TicToc
 #import  multiprocessing
 from multiprocessing import Pool
-import datetime
+import datetime #datetime.datetime.now()
+import time  #time.sleep()
+
 
 import argparse
 
@@ -137,8 +139,9 @@ class Worker():
         self.num_errors_max=NUM_ERRORS_MAX
         self.pool = Pool(processes=workers, #POOL_SIZE
                          initializer=initializer, 
-                         initargs=initargs,
-                         maxtasksperchild=16)
+                         initargs=initargs)
+#,
+#                         maxtasksperchild=16)
 
     def callback(self,is_error): #is_error could be 1 or 0
         if is_error:
@@ -153,9 +156,9 @@ class Worker():
         _flag=100
         for i in range(num_trials):
             try:
-#                if len(self.pool._cache) > 1e2:
+                while len(self.pool._cache) > 1e5:
 #                    print("waiting for cache to clear...")
-#                    last.wait()
+                    time.sleep(1)
                 if i % _flag == 0 : 
                     _flag = _flag*10
                     print(i,end=',')
