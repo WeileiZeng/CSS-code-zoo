@@ -125,3 +125,6 @@ qos:
 	sacctmgr show qos
 	sacctmgr show qos format=name%-10,Description%-20,priority,maxwall,UsageFactor,MaxTRESPU,MaxJobsPU,
 	sacctmgr list qos format==name,priority,preempt
+
+interactive:
+	salloc -q long --time=1-00:00:00
