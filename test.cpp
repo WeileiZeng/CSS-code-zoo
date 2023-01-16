@@ -364,6 +364,103 @@ void product_code_test(){
   return;
 }
 
+/**
+ *@param error, en error with weight w
+ *@param n, lenght of error
+ */
+bool next_error(itpp::bvec & error, int n, int w){
+  //  std::cout<<"input: "<<error<<std::endl;
+  //  for ( int i =0; i<n;i++){
+  //std::cout<<(error[n-1-i])<<std::endl;
+  //  }
+  //  throw;
+  for ( int i =0; i<w; i++){
+    //std::cout<<(error[n-1-i])<<std::endl;
+    //    throw "exit";
+    if (error[n-1-i]==0){
+      //shift the last 1 to the right 
+      for ( int j = n-1-i; j>-1; j--){
+	if (error[j]==1){
+	  error[j]=0;
+	  for ( int k=0;k<i+1;k++){
+	    error[j+1+k]=1;
+	    error[n-i+k]=0;
+	  }
+	  //	  std::cout<<"output: "<<error<<std::endl;
+	  return true;
+	}
+      }
+    }else{
+      //      std::cout<<"get one for "<<error<<std::endl;
+    }
+  }
+  return false;
+
+}
+
+void array_size_test(){
+  //max int 10000*100
+  // static array max: const int length=10000*10000*3;
+  //  const int length=10000*1000*5;
+  const int length=10000;
+  //ullong  length    =214748364;
+
+  const int n=20;//20 qubits
+  itpp::bvec b =itpp::zeros_b(n);
+  static itpp::bvec syndromes[length];
+  for ( int i =0; i<length; i++){
+    syndromes[i]=itpp::zeros_b(n);
+    //    std::cout<<i<<","<<syndromes[i]<<std::endl;
+  }
+  for ( int flag =10; flag<length; flag = flag * 10){
+    //    std::cout<<"debug"<<std::endl;
+    std::cout<<flag<<","<<syndromes[flag]<<std::endl;
+  }
+  for ( int i =0; i<length; i++){
+    //syndromes[i]=itpp::zeros_b(n);
+    //    std::cout<<i<<","<<syndromes[i]<<std::endl;
+  }
+  //  std::cout<<"debug"<<std::endl;
+
+  CSSCode code;
+  code.n=7;
+  code.get_713_code();
+  code.Gx=common::make_it_full_rank(code.Gx);
+  code.Gz=common::make_it_full_rank(code.Gz);
+  std::cout<<code.Gx;
+  int table_size_temp=int (pow(2,code.Gx.rows())); 
+  const int table_size=128;
+  static itpp::bvec syndrome_table[table_size];
+  itpp::bvec b_zero=itpp::zeros_b(code.n);
+  for ( int w = 1; w < code.Gx.rows()+1; w ++){
+    bool run_flag = true;
+    itpp::bvec error=itpp::zeros_b(code.n);
+    for ( int i =0 ;i<w;i++){
+      error.set(i,1);
+    }
+    std::cout<<"init error:   "<<error<<std::endl;
+    itpp::bvec syndrome;
+    int syndrome_dec;
+    while (run_flag) {
+      syndrome = code.Gx*error;
+      //      std::cout<<"error:   "<<error<<std::endl;
+      //std::cout<<"syndrome:"<<syndrome<<std::endl;
+      syndrome_dec=itpp::bin2dec(syndrome);
+      if (syndrome_table[syndrome_dec]==b_zero){
+	//if empty
+	syndrome_table[syndrome_dec] = error;
+      }
+      run_flag = next_error(error,code.n,w);
+      //      std::cout<<"run_flag:"<<run_flag<<std::endl;
+    }
+    //    break;
+  }
+
+
+
+  return;
+}
+
 int main(int args, char ** argvs){
   //  cout<<"begin test"<<endl;
   Parser parser;
@@ -411,8 +508,9 @@ int main(int args, char ** argvs){
   //kron_test();
 
 
-  product_code_test();
+  //product_code_test();
 
-    //cout<<"finish test"<<endl;
+  array_size_test();
+  cout<<"finish test"<<endl;
   return 0;
 }
