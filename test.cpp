@@ -429,9 +429,16 @@ void array_size_test(){
   code.Gz=common::make_it_full_rank(code.Gz);
   std::cout<<code.Gx;
   int table_size_temp=int (pow(2,code.Gx.rows())); 
-  const int table_size=128;
-  static itpp::bvec syndrome_table[table_size];
+  //const int table_size=128;
+  //static itpp::bvec syndrome_table[table_size];
+  int table_size=1024*1024/32;//table_size_temp;
+  itpp::bvec syndrome_table[table_size];
   itpp::bvec b_zero=itpp::zeros_b(code.n);
+  for ( int i =0;i<table_size;i++){
+    syndrome_table[i]=b_zero;
+  }
+  itpp::bvec syndrome;
+  int syndrome_dec;
   for ( int w = 1; w < code.Gx.rows()+1; w ++){
     bool run_flag = true;
     itpp::bvec error=itpp::zeros_b(code.n);
@@ -439,8 +446,6 @@ void array_size_test(){
       error.set(i,1);
     }
     std::cout<<"init error:   "<<error<<std::endl;
-    itpp::bvec syndrome;
-    int syndrome_dec;
     while (run_flag) {
       syndrome = code.Gx*error;
       //      std::cout<<"error:   "<<error<<std::endl;
@@ -453,11 +458,16 @@ void array_size_test(){
       run_flag = next_error(error,code.n,w);
       //      std::cout<<"run_flag:"<<run_flag<<std::endl;
     }
-    //    break;
   }
-
-
-
+  std::cout<<"Finish generating syndrome table"<<std::endl;
+  //now decode
+  itpp::bvec error_input=itpp::zeros_b(code.n);
+  error_input[6]=1;
+  syndrome= code.Gx*error_input;
+  syndrome_dec=itpp::bin2dec(syndrome);
+  itpp::bvec error_output = syndrome_table[syndrome_dec];
+  std::cout<<"input: "<<error_input<<std::endl;
+  std::cout<<"output:"<<error_output<<std::endl;
   return;
 }
 
