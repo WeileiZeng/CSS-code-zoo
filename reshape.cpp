@@ -125,7 +125,7 @@ double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, 
   int num_failure=0;
   int num_decode = 0;
   const int num_failure_max=e_try/100;
-  std::cout<<"num_failure_max="<<num_failure_max<<std::endl;
+  //  std::cout<<"num_failure_max="<<num_failure_max<<std::endl;
   //  p=3.0/spc.n;
   //  p =0.0635;
 
@@ -264,15 +264,16 @@ int main(int args, char ** argv){
     
     if (debug) std::cout<<"before simulate()"<<std::endl;
 
-    const int num_data=7;//13;
+    const int num_data=9;//13;
     double p_qubit[num_data], p_block[num_data];
-    double p = 0.1; 
+    double p = 0.15;//0.1 
     std::map<double,double> data_map;//[{p_qubit,p_block}]
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
+      std::cout<<i<<"/"<<num_data<<": ";
       p_block[i] = reshape_simulate(spc, p, e_try, num_cores, debug); 
       data_map[p_qubit[i]]=p_block[i];
-      p /= 1.4;//1.2;
+      p /= 1.2;//1.4;//1.2;
     }
     
     json::object_t object_value={
