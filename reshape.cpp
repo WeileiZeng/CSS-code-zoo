@@ -54,7 +54,9 @@ bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat & e_input){
   itpp::GF2mat e_decoded(e_input);
   for ( int i =0 ; i<e_input.cols(); i++){
     itpp::bvec e_col = e_input.get_col(i);
-    bool ans=spc.codeA.decode(e_col,100,0) ;
+    //bool ans=spc.codeA.decode(e_col,100,0);
+    //change decoder, should set up code A B in advance
+    spc.codeA.syndrome_table_decode(e_col);
     e_decoded.set_col(i,e_col);
   }
   e_input=e_input+e_decoded;
@@ -62,8 +64,21 @@ bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat & e_input){
   //decode by row
   for ( int i =0 ; i<e_input.rows(); i++){
     itpp::bvec e_row = e_input.get_row(i);
+    //    std::cout<<"e_r="<<e_row<<std::endl;
+
+    itpp::bvec e_1(e_row),e_2(e_row);
+    //std::cout<<"e_1="<<e_1<<std::endl
+    //	     <<"e_2="<<e_2<<","<<e_1+e_2<<std::endl;
+        spc.codeB.decode(e_1,100,0);
+        spc.codeB.syndrome_table_decode(e_2);
+	//        std::cout<<"e_1="<<e_1<<std::endl
+	//    	     <<"e_2="<<e_2<<","<<e_1+e_2
+	  //<<spc.codeB.is_logical_error(e_2+e_row)
+	//	 <<std::endl;
+	//    throw 1;
     //    std::cout<<e_row;
-    bool ans=spc.codeB.decode(e_row,100,0) ;
+        //bool ans=spc.codeB.decode(e_row,100,0) ;
+	spc.codeB.syndrome_table_decode(e_row);
     //    std::cout<<e_row<<ans<<std::endl;
     e_decoded.set_row(i,e_row);
   }
@@ -116,6 +131,8 @@ double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, 
 
 #pragma omp parallel for schedule(guided) num_threads(num_cores)
   for (int i_e=0; i_e<e_try; i_e ++){
+    //    std::cout<<i_e<<std::endl;
+
     if (num_failure >= num_failure_max) continue;
     //set up random error
     itpp::GF2mat e_input(spc.codeA.n,spc.codeB.n);
@@ -235,6 +252,11 @@ int main(int args, char ** argv){
     spc.product();
     spc.n=spc.codeA.n*spc.codeB.n;
     std::cout<<"Finish generating A,B & SPC codes"<<std::endl;
+
+
+    //set up syndrom decoder
+    spc.codeA.get_syndrome_table();
+    spc.codeB.get_syndrome_table();
 
     //only do this if using code.dist()
     //code.Gx = common::make_it_full_rank(code.Gx);
