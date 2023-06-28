@@ -66,11 +66,11 @@ bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat & e_input){
     itpp::bvec e_row = e_input.get_row(i);
     //    std::cout<<"e_r="<<e_row<<std::endl;
 
-    itpp::bvec e_1(e_row),e_2(e_row);
+    //    itpp::bvec e_1(e_row),e_2(e_row);
     //std::cout<<"e_1="<<e_1<<std::endl
     //	     <<"e_2="<<e_2<<","<<e_1+e_2<<std::endl;
-        spc.codeB.decode(e_1,100,0);
-        spc.codeB.syndrome_table_decode(e_2);
+    //        spc.codeB.decode(e_1,100,0);
+    //        spc.codeB.syndrome_table_decode(e_2);
 	//        std::cout<<"e_1="<<e_1<<std::endl
 	//    	     <<"e_2="<<e_2<<","<<e_1+e_2
 	  //<<spc.codeB.is_logical_error(e_2+e_row)
