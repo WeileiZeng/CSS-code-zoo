@@ -76,9 +76,6 @@ short:
 pkill-product:
 	pkill .product
 
-#job related
-interactive:
-	salloc --nodes=1
 
 #test dynamic lib
 dynamic:$(LIB_WEILEI_PATH)/libweilei.so
@@ -88,7 +85,7 @@ dynamic:$(LIB_WEILEI_PATH)/libweilei.so
 
 
 run-verification:
-	srun --unbuffered -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16 code_folder="" filename_list=filelist-run4.txt
+	srun --unbuffered -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16 code_folder="" filename_list=filelist-run3.txt
 run-verification-full:
 	srun --unbuffered -p small -n 1 --cpus-per-task=16 ./verification.out num_cores=16 code_folder="" filename_list=filelist-run3-full.txt
 #	srun -p small -n 1 --cpus-per-task=16 --time=6:00:00 ./verification.out num_cores=16 filename_list=filelist-run2-full.txt
@@ -119,7 +116,8 @@ show-table:
 
 #Visiting http://<hostname>:4000/?token=<token> in a browser loads JupyterLab.
 jupyter:
-	docker run -it --rm --user 1011 --group-add users -p 4000:8888 -v "${PWD}":/home/jovyan/work jupyter/datascience-notebook:85f615d5cafa
+	docker run -it --rm --user 1011 --group-add users -p 4001:8888 -v "${PWD}":/home/jovyan/work jupyter/datascience-notebook:85f615d5cafa
+
 
 qos: 
 	sacctmgr show qos
