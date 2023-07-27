@@ -116,7 +116,7 @@ show-table:
 
 #Visiting http://<hostname>:4000/?token=<token> in a browser loads JupyterLab.
 jupyter:
-	docker run -it --rm --user 1011 --group-add users -p 4001:8888 -v "${PWD}":/home/jovyan/work jupyter/datascience-notebook:85f615d5cafa
+	docker run -it --rm --user 1011 --group-add users -p 4001:8888 -e JUPYTER_TOKEN=passwd -v "${PWD}":/home/jovyan/work jupyter/datascience-notebook:85f615d5cafa
 
 
 qos: 
