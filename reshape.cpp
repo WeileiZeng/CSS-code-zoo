@@ -91,8 +91,25 @@ bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat & e_input){
   //  std::cout<<"e_vector: "<<e_vector<<std::endl;
   itpp::bvec syndrome = spc.Gx*e_vector;
   itpp::GF2mat s(syndrome);
-  return s.is_zero(); //what if logical error?
-  //  return false;
+  //  return s.is_zero(); //what if logical error? now check it
+
+  // now check whether it is logical error or not.
+  // need logical matriices.
+  itpp::bvec commute=spc.Cx*e_vector;
+  itpp::GF2mat com(commute);
+  if (s.is_zero()){//converge
+    if (com.is_zero()){
+      //good error
+      //      std::cout<<"*GOOD*"<<std::endl;
+      return true;
+    }else{
+      //logical error
+      std::cout<<"*Logical error*"<<std::endl;
+      return false;
+    }
+  }
+  return false;//not converge
+
 }
 
 //p_block[i] = code.simulate(p, e_try, num_cores, debug); 
@@ -251,6 +268,10 @@ int main(int args, char ** argv){
     spc.codeA=codeA;spc.codeB=codeB;
     spc.product();
     spc.n=spc.codeA.n*spc.codeB.n;
+
+    //generate Cx Cz
+    spc.Cx=common::kron(codeA.Cx,codeB.Cx);
+    spc.Cz=common::kron(codeA.Cz,codeB.Cz);
     std::cout<<"Finish generating A,B & SPC codes"<<std::endl;
 
 
