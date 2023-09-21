@@ -60,22 +60,21 @@ bool verify(std::string code_prefix, double & rho_x, double & rho_z, int & n_Gx,
 	n_Gx = code.Gx.rows()*code.Gx.cols();
 	n_Gz = code.Gz.rows()*code.Gz.cols();
 
-	if (data["verified"]==1 ){
+	if (data["verified"]==1 ){  //skip verified codes
 	  //	  std::cout<<"the code has been verified. skip"<<std::endl;
 	  return true;
-	}else{
-
 	}
 
 	code.dist();
 
 	if (code.d == data["d"]){
-	  data["verified"]=1;
-	  std::string filename_json = code_prefix +".json";
-	  /*	  std::ofstream filejson(filename_json);
-	  filejson << data;//j_object_t;
-	  filejson.close();
-	  */
+	  if (true){//write verified flag into json file.
+	    data["verified"]=1;
+	    std::string filename_json = code_prefix +".json";
+	    std::ofstream filejson(filename_json);
+	    filejson << data;//j_object_t;
+	    filejson.close();	  
+	  }
 	  return true;
 	}else{
 	  return false;
