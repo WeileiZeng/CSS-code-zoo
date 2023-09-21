@@ -24,18 +24,18 @@ bool verify(std::string code_prefix){
 }
 
 bool verify(std::string code_prefix, double & rho_x, double & rho_z, int & n_Gx, int & n_Gz){
+	std::ifstream jsonfile(code_prefix+".json");
+	json data = json::parse(jsonfile);
+	jsonfile.close();
+
 	CSSCode code;
 	code.load(code_prefix);
-
 	rho_x = code.Gx.density();
 	rho_z = code.Gz.density();
 	n_Gx = code.Gx.rows()*code.Gx.cols();
 	n_Gz = code.Gz.rows()*code.Gz.cols();
-
 	code.dist();
-	std::ifstream jsonfile(code_prefix+".json");
-	json data = json::parse(jsonfile);
-	jsonfile.close();
+
 	return code.d == data["d"];		
 }
 
@@ -120,8 +120,8 @@ int main(int args, char ** argv){
     }//    if (file.is_open()) 
 
     std::cout<<"Gx density:"<<rho_x_total /n_Gx_total
-	     <<",\tGz density:"<<rho_z_total /n_Gz_total
-	     <<std::endl;
+	     <<",\tGz density:"<<rho_z_total /n_Gz_total;
+    //	     <<std::endl;
     std::cout<<code_count<<" codes checked, "
 	     <<code_mistake<<" mistakes found"<<std::endl;
     return 0;
