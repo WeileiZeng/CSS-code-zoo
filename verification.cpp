@@ -25,8 +25,33 @@ bool verify(std::string code_prefix){
 
 bool verify(std::string code_prefix, double & rho_x, double & rho_z, int & n_Gx, int & n_Gz){
 	std::ifstream jsonfile(code_prefix+".json");
-	json data = json::parse(jsonfile);
+	//	json data = json::parse(jsonfile);
+
+	json data;
+	try{
+	  data = json::parse(jsonfile);
+	} catch (std::exception& e){	  
+	  std::cout<<e.what()<<std::endl;  //json.exception.parse_error.101 e
+	  std::cout<<"json parse error with file: "<<code_prefix<<std::endl;
+	  return false;
+	}
 	jsonfile.close();
+
+	/*
+	if (data["verified"]==1 ){
+	}else{
+#pragma omp critical
+	  {
+	  std::cout<<"start checking file: "<<code_prefix<<std::endl;
+	  CSSCode code;
+	  code.load(code_prefix);
+	  rho_x = code.Gx.density();
+	  rho_z = code.Gz.density();
+	  n_Gx = code.Gx.rows()*code.Gx.cols();
+	  n_Gz = code.Gz.rows()*code.Gz.cols();
+	}
+	}
+	*/
 
 	CSSCode code;
 	code.load(code_prefix);
@@ -34,11 +59,29 @@ bool verify(std::string code_prefix, double & rho_x, double & rho_z, int & n_Gx,
 	rho_z = code.Gz.density();
 	n_Gx = code.Gx.rows()*code.Gx.cols();
 	n_Gz = code.Gz.rows()*code.Gz.cols();
+
+	if (data["verified"]==1 ){
+	  //	  std::cout<<"the code has been verified. skip"<<std::endl;
+	  return true;
+	}else{
+
+	}
+
 	code.dist();
 
-	return code.d == data["d"];		
+	if (code.d == data["d"]){
+	  data["verified"]=1;
+	  std::string filename_json = code_prefix +".json";
+	  /*	  std::ofstream filejson(filename_json);
+	  filejson << data;//j_object_t;
+	  filejson.close();
+	  */
+	  return true;
+	}else{
+	  return false;
+	}
+	//	return code.d == data["d"];		
 }
-
 
 /* Counting number of lines in a file. same as `wc -l filename`
  */
@@ -85,23 +128,34 @@ int main(int args, char ** argv){
 	std::string jsonfile_name,code_name;
 #pragma omp critical
 	{
-	code_count++;
-	if (code_count % 1000 == 0){
-	  //printing on nodes are very slow
-	  printf("%i/%i codes counted, %i mistakes.\n",code_count,code_total, code_mistake);
-	  std::cout<<"Gx density:"<<rho_x_total /n_Gx_total
-	     <<",\tGz density:"<<rho_z_total /n_Gz_total
-	     <<std::endl;
-	}
-	std::getline(file, jsonfile_name);
-      }//critical
+	  code_count++;
+	  if (code_count % 1000 == 0){
+	    //printing on nodes are very slow
+	    printf("%i/%i codes counted, %i mistakes.\n",code_count,code_total, code_mistake);
+	    std::cout<<"Gx density:"<<rho_x_total /n_Gx_total
+		     <<",\tGz density:"<<rho_z_total /n_Gz_total
+		     <<std::endl;
+	  }
+	  std::getline(file, jsonfile_name);
+	}//end critical
+
 	code_name = jsonfile_name.substr(0, jsonfile_name.size()-5);
 	//        printf("%s", line.c_str());
 	//	printf("%s", code_name.c_str());
 	//	if (verify(code_folder+code_name)){
 	double rho_x,rho_z;
 	int n_Gx,n_Gz;
-	if (verify(code_folder+code_name, rho_x, rho_z, n_Gx, n_Gz)){
+
+	bool result=false;
+	try {
+	  result = verify(code_folder+code_name, rho_x, rho_z, n_Gx, n_Gz);
+	} catch (std::exception& e){	  
+	  std::cout<<e.what()<<std::endl;
+	  std::cout<<code_folder+code_name<<std::endl;
+	}
+
+	//	if (verify(code_folder+code_name, rho_x, rho_z, n_Gx, n_Gz)){
+	if (result){
 	  //	  std::cout<<"equal"<<std::endl;
 	}else{
 	  code_mistake++;
