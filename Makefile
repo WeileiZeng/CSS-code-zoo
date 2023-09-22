@@ -94,11 +94,11 @@ run-simulation:
 run-generate:
 	sbatch sbatch_generate.sh
 
-#steps to collect code date
+#steps to collect code data
 #currently takes 1 minutes
 #./get-filelist.sh
 #./processing-codes.py
-run_table:
+run-table:
 	./get-filelist.sh
 	python3 processing-codes.py
 data-statistics:
@@ -108,7 +108,9 @@ show-new-codes:
 	echo "total number of codes generated in this run"
 	cat log/generate*.log |grep save|wc -l
 show-table:
-	tail -n 31 run.log
+#	tail -n 31 run.log
+	tail -n 67 run.log
+
 
 
 
@@ -126,3 +128,14 @@ qos:
 
 interactive:
 	salloc -q long --time=1-00:00:00
+
+job-history:
+#	sacct --starttime 2023-09-01T14:00:00 --format JobID,JobName,Elapsed,ExitCode |grep nkd
+#	date -d '1 month ago' +%D-%R
+#	sacct --starttime `date -d '2 days ago' +%D-%R` --format JobID%-15,JobName,Elapsed,ExitCode,Partition,QOS,ReqCPUS,START,TotalCPU |grep nkd
+	sacct --starttime `date -d '2 days ago' +%D-%R` --format JobID%-15,JobName,Elapsed,ExitCode,Partition,ReqCPUS,START,TotalCPU |grep nkd
+#	sacct -S `date -d '1 month ago' +%D-%R`
+usage:
+	sreport user Top start=1/1/22 end=1/1/23 -t percent
+	sreport user Top start=1/1/23 -t percent
+	sreport cluster utilization -T billing start=2021-09-19
