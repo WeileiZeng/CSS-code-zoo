@@ -104,10 +104,11 @@ bool reshape_decode(SubsystemProductCSSCode spc, itpp::GF2mat & e_input){
       return true;
     }else{
       //logical error
-      std::cout<<"*Logical error*"<<std::endl;
+      //  std::cout<<"*Logical error*"<<std::endl;
       return false;
     }
   }
+  //  std::cout<<"#N";//<<std::endl;
   return false;//not converge
 
 }
@@ -175,6 +176,20 @@ double reshape_simulate(SubsystemProductCSSCode spc, double p, int e_try = 100, 
 
     itpp::GF2mat e_output(e_input);
     bool decoding_result=reshape_decode(spc, e_output);
+
+    if (true){
+    //test if more than 1 cycle is needed
+    itpp::GF2mat e_output2(e_output);
+    bool decoding_result2=reshape_decode(spc, e_output2);
+    if (decoding_result){
+    }else{
+      if (decoding_result2){
+	//	std::cout<<"converge only in second cycle"<<std::endl;
+      }
+    }
+    decoding_result = decoding_result2;
+    }
+
 #pragma omp critical
     {
       num_decode++;
@@ -287,14 +302,14 @@ int main(int args, char ** argv){
 
     const int num_data=9;//13;
     double p_qubit[num_data], p_block[num_data];
-    double p = 0.15;//0.1 
+    double p = 0.16;//0.15;//0.1 
     std::map<double,double> data_map;//[{p_qubit,p_block}]
     for ( int i =0 ; i<num_data; i++){
       p_qubit[i] = p;
       std::cout<<i<<"/"<<num_data<<": ";
       p_block[i] = reshape_simulate(spc, p, e_try, num_cores, debug); 
       data_map[p_qubit[i]]=p_block[i];
-      p /= 1.2;//1.4;//1.2;
+      p /= 1.1;// 1.2;//1.4;//1.2;
     }
     
     json::object_t object_value={
