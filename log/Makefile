@@ -1,8 +1,14 @@
 clean:
-	mv generate*.log trash
-#	mv generate*.log generate*.err trash
-show-codes:
-	bash show-codes.sh
+	mv nkd*.log trash
+#show-codes:
+#echo "this display the last lines in log file, and one can check number of codes saved in each run."
+#for i in nkd*; do tail -n 3 $i |head -n 1; done
 show-save:
-#	echo "how many codes has been saved this time:"
-	bash show-save.sh
+	echo "this count the lines with 'save', which is the same as number of codes saved during this trial"
+	grep Saved *.log | wc -l
+print-codes:
+	grep Saved *.log
+show-save-log:
+	bash show-save.sh >>clean-log.txt
+	date >> clean-log.txt
+
