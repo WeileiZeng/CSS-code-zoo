@@ -40,6 +40,7 @@ def dot_row(row):
 #            s += '.'
         else:
             s += i
+#    return str(row)
     return s
 
 def pretty_2D_list(table):
@@ -75,7 +76,7 @@ def main():
 #    data_folder = '../data/CSS-Codes/run2'
     trash_folder = '../data/CSS-Codes/trash'
 #    filename_list = '../data/CSS-Codes/filelist-run1.txt'
-    filename_list = 'filelist-run4.txt'  #./get-filelist.sh
+    filename_list = 'filelist-run3.txt'  #./get-filelist.sh
     log_file = 'run.log'
 
 #    print('data_folder:\t'+data_folder)
@@ -172,6 +173,7 @@ def json_test():
 def database_test():
     db=Database()
     data_folder = '../data/CSS-Codes/run4'
+    data_folder = '../data/CSS-Codes/tmp'
     db.create(data_folder)
     #takes 30 seconds to finish
 
