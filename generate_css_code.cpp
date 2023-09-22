@@ -32,10 +32,12 @@ int main(int args, char ** argv){
   std::string note="no note";parser.get(note,"note");
   //set up simulation
   for (int n=n_start;n<n_end;n++){
-    for ( int Gx_row = 2;Gx_row<n-1;Gx_row++){
+    for ( int Gx_row = 1;Gx_row<n-1;Gx_row++){
       //	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<std::endl;
       //      for ( int Gz_row = (n-Gx_row-3>2)?n-Gx_row-3:2 ; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
-      for ( int Gz_row = 2; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
+      for ( int Gz_row = 1; Gz_row < n-Gx_row && Gz_row < Gx_row +3 ; Gz_row ++){ //run for k > 22
+	//	if (Gx_row > 3 || Gz_row >3) continue;	
+
 	std::cout<<"n="<<n<<", Gx_row="<<Gx_row<<", Gz_row="<<Gz_row<<std::endl;
 
 	auto start = std::chrono::system_clock::now();
